@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/guangdian/26-Light/stm32/Light/build/Debug/cmake_install.cmake",
+		"D:/guangdian/26-Light/stm32/Light/build/Debug/cmake/stm32cubemx/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

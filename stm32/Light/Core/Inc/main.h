@@ -59,7 +59,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-
+#define WS2812B_PIN   GPIO_PIN_0   /* PA0 — TIM2_CH1 */
+#define WS2812B_PORT  GPIOA
+#define BUZZER_PIN    GPIO_PIN_6   /* PA6 — TIM3_CH1 */
+#define BUZZER_PORT   GPIOA
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
