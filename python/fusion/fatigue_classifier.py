@@ -33,7 +33,7 @@ class FatigueClassifier:
 
         # --- Level 3 多证据要求 ---
         if target == 3 and cfg.get("level3_multi_evidence", True) and risks:
-            if not self._check_multi_evidence(risks):
+            if not self._check_multi_evidence(risks, cfg):
                 target = 2  # 证据不足，降为 Level 2
 
         # --- 持续性约束 ---
@@ -93,13 +93,14 @@ class FatigueClassifier:
         return 3
 
     @staticmethod
-    def _check_multi_evidence(risks):
-        """Level 3 需要至少一路强证据"""
-        if risks.get("perclos", 0) >= 1.0:
+    def _check_multi_evidence(risks, cfg):
+        """Level 3 需要至少一路强证据（阈值可由配置调整）"""
+        if risks.get("perclos", 0) >= cfg.get("level3_min_perclos_risk", 1.0):
             return True
-        if risks.get("hrv", 0) >= 0.7:
+        if risks.get("hrv", 0) >= cfg.get("level3_min_hrv_risk", 0.7):
             return True
-        if risks.get("yawn", 0) >= 0.5 and risks.get("head", 0) >= 0.5:
+        if (risks.get("yawn", 0) >= cfg.get("level3_min_yawn_risk", 0.5)
+                and risks.get("head", 0) >= cfg.get("level3_min_head_risk", 0.5)):
             return True
         return False
 

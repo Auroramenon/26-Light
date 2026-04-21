@@ -13,13 +13,34 @@ class Display:
     def __init__(self, config):
         self.show_gui = config["show_gui"]
         self.show_bvp = config["show_bvp_plot"]
+        self._window_initialized = False
         if self.show_gui:
-            cv2.namedWindow(self.WINDOW_NAME, cv2.WINDOW_NORMAL)
+            try:
+                cv2.namedWindow(self.WINDOW_NAME, cv2.WINDOW_NORMAL)
+                self._window_initialized = True
+            except cv2.error:
+                # 例如在无显示环境/权限不足时，OpenCV 可能创建窗口失败
+                self.show_gui = False
+
+    def _is_window_visible(self) -> bool:
+        if not self.show_gui or not self._window_initialized:
+            return False
+        try:
+            # 关闭窗口后通常返回 -1；最小化/不可见时可能为 0
+            visible = cv2.getWindowProperty(self.WINDOW_NAME, cv2.WND_PROP_VISIBLE)
+            return visible >= 1
+        except cv2.error:
+            return False
 
     def render(self, frame, box=None, roi_coords=None, hr=0, level=0,
                fatigue_score=0.0, perclos=0.0, yawn_rate=0, bvp=None):
         """在帧上绘制所有信息并显示"""
         if not self.show_gui:
+            return
+
+        # 用户手动关闭窗口后，避免继续 imshow / waitKey 导致异常
+        if not self._is_window_visible():
+            self.show_gui = False
             return
 
         vis = frame.copy()
@@ -58,7 +79,10 @@ class Display:
             if y1 > 0 and x1 > 0:
                 vis[y1:y1 + 60, x1:x1 + 200] = bvp_img
 
-        cv2.imshow(self.WINDOW_NAME, vis)
+        try:
+            cv2.imshow(self.WINDOW_NAME, vis)
+        except cv2.error:
+            self.show_gui = False
 
     def _draw_bvp(self, bvp, width=200, height=60):
         """绘制 BVP 波形小图"""
@@ -83,8 +107,18 @@ class Display:
         """检查是否按下 q/ESC 退出"""
         if not self.show_gui:
             return False
+
+        # 窗口已被关闭/不可见：视为退出
+        if not self._is_window_visible():
+            self.show_gui = False
+            return True
+
         key = cv2.waitKey(1) & 0xFF
         return key == ord("q") or key == 27
 
     def close(self):
-        cv2.destroyAllWindows()
+        if self._window_initialized:
+            try:
+                cv2.destroyAllWindows()
+            except cv2.error:
+                pass

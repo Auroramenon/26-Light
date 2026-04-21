@@ -64,6 +64,16 @@ CONFIG = {
     "hold_seconds": 5,                                 # 持续性约束（秒）
     "level3_multi_evidence": True,                     # Level 3 是否要求多证据
 
+    # Level 3 多证据阈值（可调）
+    # 规则：满足其一即可进入 Level 3：
+    # 1) PERCLOS 风险 >= level3_min_perclos_risk
+    # 2) HRV 风险 >= level3_min_hrv_risk
+    # 3) 哈欠风险 >= level3_min_yawn_risk 且 低头风险 >= level3_min_head_risk
+    "level3_min_perclos_risk": 1.0,
+    "level3_min_hrv_risk": 0.7,
+    "level3_min_yawn_risk": 0.5,
+    "level3_min_head_risk": 0.5,
+
     # ===== 串口 =====
     "serial_port": "COM3",
     "serial_baud": 115200,
