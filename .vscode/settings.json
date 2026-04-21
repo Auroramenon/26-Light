@@ -1,0 +1,16 @@
+{
+  // 锁定本工作区使用项目自带 venv（Python 3.8）
+  "python.defaultInterpreterPath": "${workspaceFolder}/python/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+
+  // 让 Pylance/调试器更容易解析 python/ 下的模块
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/python"
+  ],
+
+  // 终端里运行脚本时，也能直接 import python/ 下模块（可选）
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}/python"
+  },
+  "cmake.sourceDirectory": "D:/respo/26-Light/stm32/Light"
+}

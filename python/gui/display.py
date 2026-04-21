@@ -81,6 +81,8 @@ class Display:
 
     def check_quit(self):
         """检查是否按下 q/ESC 退出"""
+        if not self.show_gui:
+            return False
         key = cv2.waitKey(1) & 0xFF
         return key == ord("q") or key == 27
 

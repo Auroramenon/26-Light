@@ -118,3 +118,11 @@ FatiguePacket UART_Protocol_Parse(void)
 
     return pkt;
 }
+
+/* UART 接收完成回调 — 在此文件中实现以访问 static rx_byte */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART1) {
+        UART_Protocol_RxCallback(rx_byte);
+    }
+}

@@ -40,14 +40,29 @@ CONFIG = {
     "yawn_min_frames": 10,          # 连续超阈值帧数才算一次哈欠
     "head_pitch_threshold": 15.0,   # 头部俯仰角阈值（度）
 
+    # ===== 风险映射参数（分段线性） =====
+    "perclos_low": 0.15,            # PERCLOS 低于此值 Risk=0
+    "perclos_high": 0.30,           # PERCLOS 高于此值 Risk=1
+    "yawn_rate_low": 0.2,           # 哈欠频率低于此值 Risk=0 (次/分)
+    "yawn_rate_high": 1.0,          # 哈欠频率高于此值 Risk=1 (次/分)
+    "head_angle_low": 15.0,         # 头姿偏转低于此值 Risk=0 (度)
+    "head_angle_high": 35.0,        # 头姿偏转高于此值 Risk=1 (度)
+
     # ===== 多模态融合权重 =====
     "w_hrv": 0.35,
     "w_perclos": 0.30,
     "w_yawn": 0.20,
     "w_head": 0.15,
 
+    # ===== EMA 时间平滑 =====
+    "ema_alpha": 0.3,               # EMA 平滑系数 (0.2~0.4, 越小越平滑)
+
     # ===== 疲劳分级阈值 =====
-    "fatigue_thresholds": [0.3, 0.5, 0.7],  # [轻度, 中度, 重度]
+    "fatigue_thresholds": [0.3, 0.5, 0.7],           # 基础阈值（兼容旧版）
+    "upgrade_thresholds": [0.30, 0.50, 0.70],         # 升级阈值
+    "downgrade_thresholds": [0.25, 0.45, 0.65],       # 降级阈值（低于升级，防抖动）
+    "hold_seconds": 5,                                 # 持续性约束（秒）
+    "level3_multi_evidence": True,                     # Level 3 是否要求多证据
 
     # ===== 串口 =====
     "serial_port": "COM3",

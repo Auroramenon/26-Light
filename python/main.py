@@ -21,8 +21,8 @@ from rppg.hrv_analyzer import compute_hrv
 from behavior.eye_detector import EyeDetector
 from behavior.yawn_detector import YawnDetector
 from behavior.head_pose import HeadPoseEstimator
-from fusion.feature_fusion import fuse_features
-from fusion.fatigue_classifier import classify_fatigue, LEVEL_NAMES
+from fusion.feature_fusion import FeatureFuser
+from fusion.fatigue_classifier import FatigueClassifier, LEVEL_NAMES
 from comm.serial_sender import SerialSender
 from gui.display import Display
 
@@ -76,6 +76,10 @@ def main():
 
     serial_out = SerialSender(cfg)
     display = Display(cfg)
+
+    # 有状态的融合器和分类器
+    fuser = FeatureFuser(cfg)
+    classifier = FatigueClassifier(cfg)
 
     # 状态变量
     last_detect_time = 0.0
@@ -141,9 +145,9 @@ def main():
                             hr = estimate_hr(bvp, fps, cfg["bandpass_low"], cfg["bandpass_high"])
                             hrv_features = compute_hrv(bvp, fps)
 
-                            fatigue_score = fuse_features(
-                                hrv_features, perclos, yawn_rate, head_pitch, cfg)
-                            level = classify_fatigue(fatigue_score, cfg)
+                            fatigue_score, risks = fuser.fuse(
+                                hrv_features, perclos, yawn_rate, head_pitch)
+                            level = classifier.update(fatigue_score, risks)
 
                             serial_out.send(level, hr)
                         except Exception as e:

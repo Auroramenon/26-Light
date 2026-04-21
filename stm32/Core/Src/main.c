@@ -201,14 +201,6 @@ void DMA1_Channel5_IRQHandler(void)
     HAL_DMA_IRQHandler(&hdma_tim2_ch1);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART1) {
-        extern uint8_t rx_byte;
-        UART_Protocol_RxCallback(rx_byte);
-    }
-}
-
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM2) {
