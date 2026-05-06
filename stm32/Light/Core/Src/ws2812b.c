@@ -21,6 +21,7 @@ static uint8_t led_b[WS2812B_NUM_LEDS];
 static TIM_HandleTypeDef *ws_htim;
 static uint32_t ws_channel;
 static volatile uint8_t dma_busy = 0;
+static volatile uint32_t dma_start_tick = 0;
 
 void WS2812B_Init(TIM_HandleTypeDef *htim, uint32_t channel)
 {
@@ -54,7 +55,15 @@ void WS2812B_Clear(void)
 
 void WS2812B_Update(void)
 {
-    if (dma_busy) return;
+    /* 超时保护: 如果 dma_busy 卡死超过 5ms，强制复位 */
+    if (dma_busy) {
+        if (HAL_GetTick() - dma_start_tick > 5) {
+            HAL_TIM_PWM_Stop_DMA(ws_htim, ws_channel);
+            dma_busy = 0;
+        } else {
+            return;
+        }
+    }
 
     uint16_t idx = 0;
 
@@ -75,6 +84,7 @@ void WS2812B_Update(void)
     }
 
     dma_busy = 1;
+    dma_start_tick = HAL_GetTick();
     HAL_TIM_PWM_Start_DMA(ws_htim, ws_channel,
                            (uint32_t *)dma_buffer, DMA_BUF_SIZE);
 }

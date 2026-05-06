@@ -11,6 +11,7 @@ CONFIG = {
     "camera_fps": 30,
     "camera_width": 640,
     "camera_height": 480,
+    "is_nir_camera": True,          # 是否为近红外相机（850nm）
 
     # ===== 人脸检测 =====
     "face_det_backend": "HC",       # "Y5F"(YOLO5Face,需GPU) 或 "HC"(Haar Cascade)
@@ -25,20 +26,23 @@ CONFIG = {
     "roi_y_end": 0.25,
 
     # ===== rPPG信号 =====
-    "signal_window_sec": 8,         # 滑动窗口长度（秒）
-    "rppg_method": "CHROM",         # "CHROM" 或 "POS"
+    "signal_window_sec": 10,        # 滑动窗口长度（秒）NIR模式建议10秒以上
+    "rppg_method": "NIR_ADV",       # RGB模式: "CHROM"/"POS", NIR模式: "NIR"/"NIR_ADV"/"NIR_ROBUST"
     "bandpass_low": 0.7,            # Hz (42 BPM)
     "bandpass_high": 4.0,           # Hz (240 BPM)
 
     # ===== HRV =====
     "hrv_window_sec": 60,           # HRV计算窗口（秒）
+    "hrv_update_interval_sec": 1.0, # HRV更新间隔（秒）
+    "nir_hrv_mode": "simplified",   # NIR模式HRV计算: "simplified"(仅心率) / "trend"(趋势) / "full"(完整)
+    "hrv_min_ibi_count": 40,        # 最少IBI数量（少于此值HRV不可靠）
 
     # ===== 行为检测 =====
     "ear_threshold": 0.2,           # Eye Aspect Ratio 闭眼阈值
     "perclos_window_sec": 60,       # PERCLOS统计窗口（秒）
     "yawn_mar_threshold": 0.6,      # Mouth Aspect Ratio 哈欠阈值
     "yawn_min_frames": 10,          # 连续超阈值帧数才算一次哈欠
-    "head_pitch_threshold": 15.0,   # 头部俯仰角阈值（度）
+    "head_pitch_threshold": 15.0,   # 兼容旧键（建议改用 head_angle_low）
 
     # ===== 风险映射参数（分段线性） =====
     "perclos_low": 0.15,            # PERCLOS 低于此值 Risk=0
@@ -49,10 +53,11 @@ CONFIG = {
     "head_angle_high": 35.0,        # 头姿偏转高于此值 Risk=1 (度)
 
     # ===== 多模态融合权重 =====
-    "w_hrv": 0.35,
-    "w_perclos": 0.30,
-    "w_yawn": 0.20,
-    "w_head": 0.15,
+    # NIR模式下HRV准确度较低，降低其权重，提高行为指标权重
+    "w_hrv": 0.20,          # HRV权重（NIR模式建议0.15-0.20）
+    "w_perclos": 0.40,      # PERCLOS权重（主要指标）
+    "w_yawn": 0.25,         # 哈欠权重
+    "w_head": 0.15,         # 头姿权重
 
     # ===== EMA 时间平滑 =====
     "ema_alpha": 0.3,               # EMA 平滑系数 (0.2~0.4, 越小越平滑)
@@ -78,6 +83,9 @@ CONFIG = {
     "serial_port": "COM3",
     "serial_baud": 115200,
     "serial_enabled": True,
+    "serial_send_interval_sec": 0.5,      # 最小发送间隔（秒）
+    "serial_reconnect_interval_sec": 2.0, # 断线重连周期（秒）
+    "serial_max_failures": 5,             # 连续发送失败上限
 
     # ===== 深度学习模型（可选） =====
     "use_neural": False,

@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "name": "light",
+            "type": "stlinkgdbtarget",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "preBuild": "${command:st-stm32-ide-debug-launch.build}",
+            "runEntry": "main",
+            "imagesAndSymbols": [
+                {
+                    "imageFileName": "${workspaceFolder}/stm32/Light/build/Debug/Light.elf"
+                }
+            ],
+            "verbose": false
+        },
+        {
+            "name": "light",
+            "type": "stlinkgdbtarget",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "preBuild": "${command:st-stm32-ide-debug-launch.build}",
+            "runEntry": "main",
+            "imagesAndSymbols": [
+                {
+                    "imageFileName": "${workspaceFolder}/stm32/Light/build/Debug/Light.elf"
+                }
+            ],
+            "verbose": false
+        }
+    ]
+}

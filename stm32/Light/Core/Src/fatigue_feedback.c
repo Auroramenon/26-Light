@@ -25,7 +25,7 @@ void Feedback_SetLevel(FatigueLevel level)
     blink_timer = 0;
     blink_state = 0;
 
-    switch (level) {
+0    switch (level) {
     case FATIGUE_NORMAL:
         WS2812B_Fill(0, 200, 0);      /* 绿色 */
         WS2812B_Update();

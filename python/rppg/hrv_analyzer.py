@@ -1,60 +1,108 @@
-"""HRV 特征分析 — 从 BVP 信号提取时域和频域 HRV 指标"""
+"""HRV 特征分析 — 从 BVP 信号提取时域和频域 HRV 指标
 
+支持两种使用方式:
+1. 无状态: compute_hrv(bvp, fs) — 直接从单段 BVP 计算（短窗口，频域不可靠）
+2. 有状态: IBIAccumulator — 从短窗口 BVP 中提取 IBI 并累积到 60s 滑窗，
+   频域指标（LF/HF）在长窗口下才有意义。
+"""
+
+import time
 import numpy as np
+from collections import deque
 from scipy.signal import find_peaks, butter, filtfilt, welch
 
 
-def compute_hrv(bvp, fs):
-    """从 BVP 信号计算 HRV 特征
-
-    Args:
-        bvp: 1D BVP 信号
-        fs: 采样率
+def _extract_ibi(bvp, fs):
+    """从 BVP 信号提取 IBI 序列（毫秒）
 
     Returns:
-        dict: {rmssd, sdnn, pnn50, lf_hf, mean_hr}
+        ibi_ms: ndarray of valid IBI values (ms), may be empty
     """
     if len(bvp) < 30:
-        return _empty_hrv()
+        return np.array([])
 
-    # 带通滤波
     nyq = fs / 2
     b, a = butter(2, [0.7 / nyq, 4.0 / nyq], btype="bandpass")
     bvp_filt = filtfilt(b, a, bvp.astype(np.float64))
 
-    # 寻峰 — 最小间距 0.33s (180 BPM)
     min_dist = int(fs * 0.33)
     peaks, _ = find_peaks(bvp_filt, distance=min_dist)
 
-    if len(peaks) < 4:
-        return _empty_hrv()
+    if len(peaks) < 2:
+        return np.array([])
 
-    # IBI (ms)
     ibi = np.diff(peaks) / fs * 1000.0
-
-    # 过滤异常 IBI (< 300ms 或 > 1500ms)
     valid = (ibi > 300) & (ibi < 1500)
-    ibi = ibi[valid]
-    if len(ibi) < 3:
-        return _empty_hrv()
+    return ibi[valid]
 
-    # 时域指标
-    rmssd = float(np.sqrt(np.mean(np.diff(ibi) ** 2)))
-    sdnn = float(np.std(ibi, ddof=1))
-    nn50 = int(np.sum(np.abs(np.diff(ibi)) > 50))
-    pnn50 = nn50 / len(ibi) * 100.0
-    mean_hr = 60000.0 / np.mean(ibi)
 
-    # 频域指标 (LF/HF)
-    lf_hf = _compute_lf_hf(ibi)
+class IBIAccumulator:
+    """IBI 滑窗累积器 — 从短窗口 BVP 中提取 IBI，累积到长窗口计算 HRV
 
-    return {
-        "rmssd": rmssd,
-        "sdnn": sdnn,
-        "pnn50": pnn50,
-        "lf_hf": lf_hf,
-        "mean_hr": mean_hr,
-    }
+    用法:
+        acc = IBIAccumulator(window_sec=60, update_interval=1.0)
+        # 每次短窗口 BVP 就绪时:
+        acc.feed_bvp(bvp, fs)
+        # 需要 HRV 时:
+        hrv = acc.compute()
+    """
+
+    def __init__(self, window_sec=60, update_interval=1.0):
+        self.window_sec = window_sec
+        self.update_interval = update_interval
+        self._ibi_buffer = deque()      # (timestamp, ibi_ms) pairs
+        self._last_update = 0.0
+        self._cached_hrv = _empty_hrv("not_ready")
+
+    def feed_bvp(self, bvp, fs):
+        """从短窗口 BVP 提取 IBI 并追加到滑窗"""
+        ibi_arr = _extract_ibi(bvp, fs)
+        if len(ibi_arr) == 0:
+            return
+
+        now = time.time()
+        for val in ibi_arr:
+            self._ibi_buffer.append((now, float(val)))
+
+        # 淘汰超出窗口的旧数据
+        cutoff = now - self.window_sec
+        while self._ibi_buffer and self._ibi_buffer[0][0] < cutoff:
+            self._ibi_buffer.popleft()
+
+        # 按间隔更新缓存
+        if now - self._last_update >= self.update_interval:
+            self._cached_hrv = self._compute_from_buffer()
+            self._last_update = now
+
+    def compute(self):
+        """返回最近一次计算的 HRV 特征"""
+        return self._cached_hrv
+
+    def _compute_from_buffer(self):
+        ibi_values = np.array([v for _, v in self._ibi_buffer])
+        if len(ibi_values) < 3:
+            return _empty_hrv("insufficient_ibi")
+
+        # 时域指标
+        rmssd = float(np.sqrt(np.mean(np.diff(ibi_values) ** 2)))
+        sdnn = float(np.std(ibi_values, ddof=1))
+        nn50 = int(np.sum(np.abs(np.diff(ibi_values)) > 50))
+        pnn50 = nn50 / len(ibi_values) * 100.0
+        mean_hr = 60000.0 / np.mean(ibi_values)
+
+        # 频域指标 — 累积的 IBI 足够长，LF/HF 才有意义
+        lf_hf = _compute_lf_hf(ibi_values)
+
+        return {
+            "rmssd": rmssd,
+            "sdnn": sdnn,
+            "pnn50": pnn50,
+            "lf_hf": lf_hf,
+            "mean_hr": mean_hr,
+            "ibi_count": len(ibi_values),
+            "valid": True,
+            "reason": "ok",
+        }
 
 
 def _compute_lf_hf(ibi_ms):
@@ -90,5 +138,40 @@ def _compute_lf_hf(ibi_ms):
     return float(lf_power / hf_power)
 
 
-def _empty_hrv():
-    return {"rmssd": 0.0, "sdnn": 0.0, "pnn50": 0.0, "lf_hf": 1.0, "mean_hr": 0.0}
+def _empty_hrv(reason="unknown"):
+    # 使用中性基线，避免窗口不足时把 HRV 风险误判为高疲劳。
+    return {
+        "rmssd": 30.0,
+        "sdnn": 50.0,
+        "pnn50": 10.0,
+        "lf_hf": 1.0,
+        "mean_hr": 0.0,
+        "ibi_count": 0,
+        "valid": False,
+        "reason": reason,
+    }
+
+
+def compute_hrv(bvp, fs):
+    """兼容旧接口 — 从单段 BVP 直接计算 HRV（短窗口，频域不够可靠）"""
+    ibi = _extract_ibi(bvp, fs)
+    if len(ibi) < 3:
+        return _empty_hrv("insufficient_ibi")
+
+    rmssd = float(np.sqrt(np.mean(np.diff(ibi) ** 2)))
+    sdnn = float(np.std(ibi, ddof=1))
+    nn50 = int(np.sum(np.abs(np.diff(ibi)) > 50))
+    pnn50 = nn50 / len(ibi) * 100.0
+    mean_hr = 60000.0 / np.mean(ibi)
+    lf_hf = _compute_lf_hf(ibi)
+
+    return {
+        "rmssd": rmssd,
+        "sdnn": sdnn,
+        "pnn50": pnn50,
+        "lf_hf": lf_hf,
+        "mean_hr": mean_hr,
+        "ibi_count": len(ibi),
+        "valid": True,
+        "reason": "ok",
+    }

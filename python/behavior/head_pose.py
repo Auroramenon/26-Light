@@ -22,7 +22,8 @@ class HeadPoseEstimator:
     """头部姿态估计，输出俯仰角 (pitch)"""
 
     def __init__(self, config):
-        self.threshold = config["head_pitch_threshold"]
+        # 兼容旧配置键: head_pitch_threshold
+        self.threshold = config.get("head_angle_low", config.get("head_pitch_threshold", 15.0))
         self._camera_matrix = None
         self._dist_coeffs = np.zeros((4, 1), dtype=np.float64)
 
