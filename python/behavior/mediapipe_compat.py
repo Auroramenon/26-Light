@@ -5,6 +5,7 @@
 """
 
 import sys
+import numpy as np
 
 try:
     # 尝试新版API
@@ -30,6 +31,8 @@ class FaceMeshWrapper:
     def __init__(self, max_num_faces=1, refine_landmarks=True,
                  min_detection_confidence=0.5, min_tracking_confidence=0.5):
 
+        self.version = _MEDIAPIPE_VERSION
+
         if _MEDIAPIPE_VERSION == "old":
             # 旧版API
             self.face_mesh = mp.solutions.face_mesh.FaceMesh(
@@ -39,18 +42,57 @@ class FaceMeshWrapper:
                 min_tracking_confidence=min_tracking_confidence
             )
         else:
-            # 新版API - 使用FaceLandmarker
-            print("[警告] 新版MediaPipe (0.10+) 的Face Mesh API已改变")
-            print("[提示] 建议降级到0.9版本: pip install mediapipe==0.9.3.0")
-            print("[提示] 或者禁用行为检测功能")
-            raise NotImplementedError(
-                "新版MediaPipe (0.10+) 需要不同的API。\n"
-                "请降级: pip install mediapipe==0.9.3.0"
+            # 新版API - 使用FaceLandmarker (IMAGE模式，同步处理)
+            print("[MediaPipe] 初始化新版FaceLandmarker...")
+            base_options = python.BaseOptions(model_asset_path=None)  # 使用内置模型
+            options = vision.FaceLandmarkerOptions(
+                base_options=base_options,
+                running_mode=vision.RunningMode.IMAGE,  # 改为IMAGE模式，无需回调
+                num_faces=max_num_faces,
+                min_face_detection_confidence=min_detection_confidence,
+                min_face_presence_confidence=min_tracking_confidence,
+                min_tracking_confidence=min_tracking_confidence,
+                output_face_blendshapes=False,  # 不需要blendshapes
+                output_facial_transformation_matrixes=False  # 不需要变换矩阵
             )
+            self.face_mesh = vision.FaceLandmarker.create_from_options(options)
 
     def process(self, image):
-        """处理图像，返回landmarks"""
-        return self.face_mesh.process(image)
+        """处理图像，返回landmarks（兼容旧版格式）"""
+        if self.version == "old":
+            # 旧版直接返回
+            return self.face_mesh.process(image)
+        else:
+            # 新版API - 转换为旧版格式
+            # 新版返回FaceLandmarkerResult，需要转换
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+            result = self.face_mesh.detect(mp_image)
+
+            # 转换为旧版格式
+            if result.face_landmarks:
+                # 创建兼容的NamedTuple
+                from collections import namedtuple
+                FaceMeshResult = namedtuple('FaceMeshResult', ['multi_face_landmarks'])
+
+                # 转换landmarks格式
+                multi_face_landmarks = []
+                for face_landmarks in result.face_landmarks:
+                    landmarks = []
+                    for landmark in face_landmarks:
+                        # 创建兼容的landmark对象
+                        landmark_obj = type('Landmark', (), {
+                            'x': landmark.x,
+                            'y': landmark.y,
+                            'z': landmark.z
+                        })()
+                        landmarks.append(landmark_obj)
+                    multi_face_landmarks.append(type('FaceLandmarks', (), {'landmark': landmarks})())
+
+                return FaceMeshResult(multi_face_landmarks=multi_face_landmarks)
+            else:
+                # 无检测结果
+                FaceMeshResult = namedtuple('FaceMeshResult', ['multi_face_landmarks'])
+                return FaceMeshResult(multi_face_landmarks=None)
 
     def close(self):
         """关闭资源"""

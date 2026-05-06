@@ -82,13 +82,25 @@ def main():
             use_neural = False
 
     # MediaPipe Face Mesh（行为检测共用）
-    mp_face = get_face_mesh(
-        max_num_faces=1, refine_landmarks=True,
-        min_detection_confidence=0.5, min_tracking_confidence=0.5)
+    try:
+        mp_face = get_face_mesh(
+            max_num_faces=1, refine_landmarks=True,
+            min_detection_confidence=0.5, min_tracking_confidence=0.5)
+        behavior_enabled = True
+        print("[系统] 行为检测已启用")
+    except Exception as e:
+        print(f"[警告] MediaPipe初始化失败，禁用行为检测: {e}")
+        mp_face = None
+        behavior_enabled = False
 
-    eye_det = EyeDetector(cfg)
-    yawn_det = YawnDetector(cfg)
-    head_est = HeadPoseEstimator(cfg)
+    if behavior_enabled:
+        eye_det = EyeDetector(cfg)
+        yawn_det = YawnDetector(cfg)
+        head_est = HeadPoseEstimator(cfg)
+    else:
+        eye_det = None
+        yawn_det = None
+        head_est = None
 
     serial_out = SerialSender(cfg)
     display = Display(cfg)
@@ -140,15 +152,21 @@ def main():
                     current_box = tracked
 
             # --- 行为特征（每帧都跑 MediaPipe） ---
-            rgb_frame = frame[:, :, ::-1]
-            mp_result = mp_face.process(rgb_frame)
-            landmarks = None
-            if mp_result.multi_face_landmarks:
-                landmarks = mp_result.multi_face_landmarks[0].landmark
+            if behavior_enabled:
+                rgb_frame = frame[:, :, ::-1]
+                mp_result = mp_face.process(rgb_frame)
+                landmarks = None
+                if mp_result.multi_face_landmarks:
+                    landmarks = mp_result.multi_face_landmarks[0].landmark
 
-            perclos = eye_det.update(landmarks)
-            yawn_rate = yawn_det.update(landmarks)
-            head_pitch = head_est.update(landmarks, frame.shape)
+                perclos = eye_det.update(landmarks)
+                yawn_rate = yawn_det.update(landmarks)
+                head_pitch = head_est.update(landmarks, frame.shape)
+            else:
+                # 禁用行为检测时的默认值
+                perclos = 0.0
+                yawn_rate = 0
+                head_pitch = 0.0
 
             # --- ROI + rPPG ---
             roi_coords = None
@@ -207,7 +225,8 @@ def main():
         camera.release()
         serial_out.close()
         display.close()
-        mp_face.close()
+        if mp_face is not None:
+            mp_face.close()
         print("[系统] 已退出")
 
 
