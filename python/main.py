@@ -7,7 +7,6 @@
 
 import argparse
 import time
-import mediapipe as mp
 
 from config import CONFIG
 from capture.camera import Camera
@@ -16,11 +15,13 @@ from face.tracker import FaceTracker
 from face.roi import extract_roi, get_roi_coords
 from rppg.signal_buffer import SignalBuffer
 from rppg.unsupervised import extract_bvp
+from rppg.neural import NeuralRPPG
 from rppg.hr_estimator import estimate_hr
-from rppg.hrv_analyzer import compute_hrv
+from rppg.hrv_analyzer import IBIAccumulator
 from behavior.eye_detector import EyeDetector
 from behavior.yawn_detector import YawnDetector
 from behavior.head_pose import HeadPoseEstimator
+from behavior.mediapipe_compat import get_face_mesh
 from fusion.feature_fusion import FeatureFuser
 from fusion.fatigue_classifier import FatigueClassifier, LEVEL_NAMES
 from comm.serial_sender import SerialSender
@@ -64,9 +65,24 @@ def main():
     face_det = FaceDetector(cfg)
     tracker = FaceTracker()
     sig_buf = SignalBuffer(fps, cfg["signal_window_sec"])
+    ibi_acc = IBIAccumulator(
+        window_sec=cfg["hrv_window_sec"],
+        update_interval=cfg.get("hrv_update_interval_sec", 1.0))
+
+    # rPPG分支：无监督/神经网络二选一
+    neural_rppg = None
+    use_neural = cfg.get("use_neural", False)
+    bvp_backend = cfg["rppg_method"]
+    if use_neural:
+        try:
+            neural_rppg = NeuralRPPG(cfg)
+            bvp_backend = f"NEURAL:{cfg['neural_model']}"
+        except Exception as e:
+            print(f"[rPPG] 神经网络分支初始化失败，回退到{cfg['rppg_method']}: {e}")
+            use_neural = False
 
     # MediaPipe Face Mesh（行为检测共用）
-    mp_face = mp.solutions.face_mesh.FaceMesh(
+    mp_face = get_face_mesh(
         max_num_faces=1, refine_landmarks=True,
         min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
@@ -92,10 +108,13 @@ def main():
     head_pitch = 0.0
     bvp = None
     hrv_features = {}
+    hrv_reason = "not_ready"
+    last_status_log = 0.0
 
     print("[系统] 初始化完成，开始运行 (按 q 退出)")
     print(f"[配置] 相机={cfg['camera_index']} 方法={cfg['rppg_method']} "
           f"人脸={cfg['face_det_backend']} 串口={cfg['serial_port'] if cfg['serial_enabled'] else '禁用'}")
+    print(f"[配置] BVP后端={bvp_backend} HRV滑窗={cfg['hrv_window_sec']}s(IBI累积)")
 
     # ===== 主循环 =====
     try:
@@ -106,6 +125,7 @@ def main():
                 break
 
             now = time.time()
+            serial_out.tick(now)
 
             # --- 人脸检测/跟踪 ---
             if now - last_detect_time >= cfg["face_rescan_interval"] or current_box is None:
@@ -141,17 +161,36 @@ def main():
 
                     if sig_buf.is_ready():
                         try:
-                            bvp = extract_bvp(sig_buf.get_frames(), fps, cfg["rppg_method"])
+                            short_frames = sig_buf.get_frames()
+                            if use_neural and neural_rppg is not None:
+                                bvp = neural_rppg.predict(short_frames)
+                            else:
+                                bvp = extract_bvp(short_frames, fps, cfg["rppg_method"], cfg.get("is_nir_camera", False))
+
                             hr = estimate_hr(bvp, fps, cfg["bandpass_low"], cfg["bandpass_high"])
-                            hrv_features = compute_hrv(bvp, fps)
+
+                            # 从短窗口 BVP 提取 IBI 并累积到 60s 滑窗
+                            ibi_acc.feed_bvp(bvp, fps)
+                            hrv_features = ibi_acc.compute()
+                            hrv_reason = hrv_features.get("reason", "ok")
 
                             fatigue_score, risks = fuser.fuse(
                                 hrv_features, perclos, yawn_rate, head_pitch)
                             level = classifier.update(fatigue_score, risks)
 
-                            serial_out.send(level, hr)
+                            serial_out.send(level, hr, now=now)
                         except Exception as e:
                             print(f"[rPPG] 处理异常: {e}")
+
+            if now - last_status_log >= 5.0:
+                serial_status = serial_out.status()
+                print(
+                    f"[状态] level={level} score={fatigue_score:.2f} hr={hr:.0f} "
+                    f"HRV={'OK' if hrv_features.get('valid', False) else 'PENDING'}({hrv_reason}) "
+                    f"串口={serial_status['state']} fail={serial_status['failures']} "
+                    f"drop={serial_status['rate_limited_drops']}"
+                )
+                last_status_log = now
 
             # --- GUI ---
             display.render(

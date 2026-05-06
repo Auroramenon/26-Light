@@ -12,5 +12,5 @@
   "terminal.integrated.env.windows": {
     "PYTHONPATH": "${workspaceFolder}/python"
   },
-  "cmake.sourceDirectory": "D:/respo/26-Light/stm32/Light"
+  "cmake.sourceDirectory": "D:/guangdian/26-Light/stm32/Light"
 }
