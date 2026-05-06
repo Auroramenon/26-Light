@@ -94,7 +94,7 @@ def main():
     hrv_features = {}
 
     print("[系统] 初始化完成，开始运行 (按 q 退出)")
-    print(f"[配置] 相机={cfg['camera_index']} 方法={cfg['rppg_method']} "
+    print(f"[配置] 相机={cfg['camera_index']} 后端={camera.backend_name} 方法={cfg['rppg_method']} "
           f"人脸={cfg['face_det_backend']} 串口={cfg['serial_port'] if cfg['serial_enabled'] else '禁用'}")
 
     # ===== 主循环 =====
