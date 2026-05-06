@@ -6,6 +6,9 @@
 
 import sys
 import numpy as np
+from collections import namedtuple
+import os
+import urllib.request
 
 try:
     # 尝试新版API
@@ -44,17 +47,37 @@ class FaceMeshWrapper:
         else:
             # 新版API - 使用FaceLandmarker (IMAGE模式，同步处理)
             print("[MediaPipe] 初始化新版FaceLandmarker...")
-            base_options = python.BaseOptions(model_asset_path=None)  # 使用内置模型
+            
+            # 下载模型文件到本地缓存
+            model_url = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+            cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "mediapipe")
+            os.makedirs(cache_dir, exist_ok=True)
+            model_path = os.path.join(cache_dir, "face_landmarker.task")
+            
+            if not os.path.exists(model_path):
+                print(f"[MediaPipe] 下载模型文件到 {model_path}...")
+                try:
+                    urllib.request.urlretrieve(model_url, model_path)
+                    print("[MediaPipe] 模型下载完成")
+                except Exception as e:
+                    print(f"[MediaPipe] 模型下载失败: {e}")
+                    raise
+            else:
+                print(f"[MediaPipe] 使用缓存模型: {model_path}")
+            
+            base_options = python.BaseOptions(model_asset_path=model_path)
+            
             options = vision.FaceLandmarkerOptions(
                 base_options=base_options,
-                running_mode=vision.RunningMode.IMAGE,  # 改为IMAGE模式，无需回调
+                running_mode=vision.RunningMode.IMAGE,  # IMAGE模式，无需回调
                 num_faces=max_num_faces,
                 min_face_detection_confidence=min_detection_confidence,
                 min_face_presence_confidence=min_tracking_confidence,
                 min_tracking_confidence=min_tracking_confidence,
-                output_face_blendshapes=False,  # 不需要blendshapes
-                output_facial_transformation_matrixes=False  # 不需要变换矩阵
+                output_face_blendshapes=False,
+                output_facial_transformation_matrixes=False
             )
+            
             self.face_mesh = vision.FaceLandmarker.create_from_options(options)
 
     def process(self, image):
@@ -64,33 +87,55 @@ class FaceMeshWrapper:
             return self.face_mesh.process(image)
         else:
             # 新版API - 转换为旧版格式
-            # 新版返回FaceLandmarkerResult，需要转换
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
-            result = self.face_mesh.detect(mp_image)
+            try:
+                # 新版返回FaceLandmarkerResult
+                # 需要先确保输入格式正确
+                if not isinstance(image, mp.Image):
+                    # 如果是numpy数组，转换为Image
+                    if isinstance(image, np.ndarray):
+                        # 确保是RGB格式
+                        if len(image.shape) == 3 and image.shape[2] == 3:
+                            mp_image = mp.Image(mp.ImageFormat.SRGB, image)
+                        else:
+                            raise ValueError(f"Image shape {image.shape} not supported")
+                    else:
+                        mp_image = image
+                else:
+                    mp_image = image
 
-            # 转换为旧版格式
-            if result.face_landmarks:
-                # 创建兼容的NamedTuple
-                from collections import namedtuple
-                FaceMeshResult = namedtuple('FaceMeshResult', ['multi_face_landmarks'])
+                result = self.face_mesh.detect(mp_image)
 
-                # 转换landmarks格式
-                multi_face_landmarks = []
-                for face_landmarks in result.face_landmarks:
-                    landmarks = []
-                    for landmark in face_landmarks:
-                        # 创建兼容的landmark对象
-                        landmark_obj = type('Landmark', (), {
-                            'x': landmark.x,
-                            'y': landmark.y,
-                            'z': landmark.z
-                        })()
-                        landmarks.append(landmark_obj)
-                    multi_face_landmarks.append(type('FaceLandmarks', (), {'landmark': landmarks})())
+                # 转换为旧版格式以兼容现有代码
+                if result.face_landmarks:
+                    FaceMeshResult = namedtuple('FaceMeshResult', ['multi_face_landmarks'])
 
-                return FaceMeshResult(multi_face_landmarks=multi_face_landmarks)
-            else:
-                # 无检测结果
+                    multi_face_landmarks = []
+                    for face_landmarks in result.face_landmarks:
+                        # 创建兼容旧版的landmark列表
+                        landmarks = []
+                        for landmark in face_landmarks:
+                            # 创建兼容的landmark对象
+                            Landmark = namedtuple('Landmark', ['x', 'y', 'z'])
+                            landmark_obj = Landmark(
+                                x=landmark.x,
+                                y=landmark.y,
+                                z=landmark.z if hasattr(landmark, 'z') else 0.0
+                            )
+                            landmarks.append(landmark_obj)
+                        
+                        # 创建FaceLandmarks包装
+                        FaceLandmarks = namedtuple('FaceLandmarks', ['landmark'])
+                        multi_face_landmarks.append(
+                            FaceLandmarks(landmark=landmarks)
+                        )
+
+                    return FaceMeshResult(multi_face_landmarks=multi_face_landmarks)
+                else:
+                    # 无检测结果
+                    FaceMeshResult = namedtuple('FaceMeshResult', ['multi_face_landmarks'])
+                    return FaceMeshResult(multi_face_landmarks=None)
+            except Exception as e:
+                print(f"[MediaPipe] 检测失败: {e}")
                 FaceMeshResult = namedtuple('FaceMeshResult', ['multi_face_landmarks'])
                 return FaceMeshResult(multi_face_landmarks=None)
 

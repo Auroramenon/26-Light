@@ -33,7 +33,8 @@ class Display:
             return False
 
     def render(self, frame, box=None, roi_coords=None, hr=0, level=0,
-               fatigue_score=0.0, perclos=0.0, yawn_rate=0, bvp=None):
+               fatigue_score=0.0, perclos=0.0, yawn_rate=0, bvp=None,
+               hrv_features=None):
         """在帧上绘制所有信息并显示"""
         if not self.show_gui:
             return
@@ -57,10 +58,21 @@ class Display:
 
         # 信息面板
         panel_y = 30
+        hrv_status = "PENDING"
+        hrv_detail = ""
+        if hrv_features is not None:
+            if hrv_features.get("valid", False):
+                hrv_status = "OK"
+                hrv_detail = (f" RMSSD={hrv_features.get('rmssd', 0):.1f} "
+                              f"SDNN={hrv_features.get('sdnn', 0):.1f}")
+            else:
+                hrv_status = hrv_features.get("reason", "PENDING")
+
         info_lines = [
             f"HR: {hr:.0f} BPM",
             f"Level: {level} - {LEVEL_NAMES.get(level, '?')}",
             f"Score: {fatigue_score:.2f}",
+            f"HRV: {hrv_status}{hrv_detail}",
             f"PERCLOS: {perclos:.2f}",
             f"Yawn: {yawn_rate}/min",
         ]

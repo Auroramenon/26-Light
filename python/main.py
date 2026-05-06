@@ -82,25 +82,13 @@ def main():
             use_neural = False
 
     # MediaPipe Face Mesh（行为检测共用）
-    try:
-        mp_face = get_face_mesh(
-            max_num_faces=1, refine_landmarks=True,
-            min_detection_confidence=0.5, min_tracking_confidence=0.5)
-        behavior_enabled = True
-        print("[系统] 行为检测已启用")
-    except Exception as e:
-        print(f"[警告] MediaPipe初始化失败，禁用行为检测: {e}")
-        mp_face = None
-        behavior_enabled = False
+    mp_face = get_face_mesh(
+        max_num_faces=1, refine_landmarks=True,
+        min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    if behavior_enabled:
-        eye_det = EyeDetector(cfg)
-        yawn_det = YawnDetector(cfg)
-        head_est = HeadPoseEstimator(cfg)
-    else:
-        eye_det = None
-        yawn_det = None
-        head_est = None
+    eye_det = EyeDetector(cfg)
+    yawn_det = YawnDetector(cfg)
+    head_est = HeadPoseEstimator(cfg)
 
     serial_out = SerialSender(cfg)
     display = Display(cfg)
@@ -152,21 +140,15 @@ def main():
                     current_box = tracked
 
             # --- 行为特征（每帧都跑 MediaPipe） ---
-            if behavior_enabled:
-                rgb_frame = frame[:, :, ::-1]
-                mp_result = mp_face.process(rgb_frame)
-                landmarks = None
-                if mp_result.multi_face_landmarks:
-                    landmarks = mp_result.multi_face_landmarks[0].landmark
+            rgb_frame = frame[:, :, ::-1]
+            mp_result = mp_face.process(rgb_frame)
+            landmarks = None
+            if mp_result.multi_face_landmarks:
+                landmarks = mp_result.multi_face_landmarks[0].landmark
 
-                perclos = eye_det.update(landmarks)
-                yawn_rate = yawn_det.update(landmarks)
-                head_pitch = head_est.update(landmarks, frame.shape)
-            else:
-                # 禁用行为检测时的默认值
-                perclos = 0.0
-                yawn_rate = 0
-                head_pitch = 0.0
+            perclos = eye_det.update(landmarks)
+            yawn_rate = yawn_det.update(landmarks)
+            head_pitch = head_est.update(landmarks, frame.shape)
 
             # --- ROI + rPPG ---
             roi_coords = None
@@ -202,9 +184,13 @@ def main():
 
             if now - last_status_log >= 5.0:
                 serial_status = serial_out.status()
+                hrv_status = 'OK' if hrv_features.get('valid', False) else 'PENDING'
+                hrv_detail = ""
+                if hrv_features.get('valid', False):
+                    hrv_detail = f" RMSSD={hrv_features.get('rmssd', 0):.1f} SDNN={hrv_features.get('sdnn', 0):.1f} IBI={hrv_features.get('ibi_count', 0)}"
                 print(
                     f"[状态] level={level} score={fatigue_score:.2f} hr={hr:.0f} "
-                    f"HRV={'OK' if hrv_features.get('valid', False) else 'PENDING'}({hrv_reason}) "
+                    f"HRV={hrv_status}({hrv_reason}){hrv_detail} "
                     f"串口={serial_status['state']} fail={serial_status['failures']} "
                     f"drop={serial_status['rate_limited_drops']}"
                 )
@@ -214,7 +200,8 @@ def main():
             display.render(
                 frame, box=current_box, roi_coords=roi_coords,
                 hr=hr, level=level, fatigue_score=fatigue_score,
-                perclos=perclos, yawn_rate=yawn_rate, bvp=bvp)
+                perclos=perclos, yawn_rate=yawn_rate, bvp=bvp,
+                hrv_features=hrv_features)
 
             if display.check_quit():
                 break
@@ -225,8 +212,7 @@ def main():
         camera.release()
         serial_out.close()
         display.close()
-        if mp_face is not None:
-            mp_face.close()
+        mp_face.close()
         print("[系统] 已退出")
 
 
