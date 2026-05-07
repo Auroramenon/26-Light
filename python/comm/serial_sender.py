@@ -19,6 +19,7 @@ class SerialSender:
         self._port = None
         self._last_send_ts = 0.0
         self._last_reconnect_ts = 0.0
+        self._last_sent_level = None
         self._failures = 0
         self._rate_limited_drops = 0
         self._state = "disabled" if not self.enabled else "disconnected"
@@ -65,8 +66,11 @@ class SerialSender:
         self._last_reconnect_ts = now
         self._connect(initial=False)
 
-    def send(self, level, hr, now=None):
-        """发送疲劳等级和心率到 STM32"""
+    def send(self, level, hr, now=None, force=False):
+        """发送疲劳等级和心率到 STM32
+
+        如果等级发生变化，则允许忽略节流间隔立即发送。
+        """
         if not self.enabled:
             return False
 
@@ -77,7 +81,8 @@ class SerialSender:
         if self._port is None or not self._port.is_open:
             return False
 
-        if now - self._last_send_ts < self.send_interval:
+        should_send = force or self._last_sent_level != level
+        if not should_send and now - self._last_send_ts < self.send_interval:
             self._rate_limited_drops += 1
             return False
 
@@ -85,6 +90,7 @@ class SerialSender:
         try:
             self._port.write(packet)
             self._last_send_ts = now
+            self._last_sent_level = level
             self._failures = 0
             self._state = "ready"
             return True

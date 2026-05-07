@@ -54,7 +54,7 @@ build CMakeFiles/Light.dir/Core/Src/main.c.obj: C_COMPILER__Light_unscanned_Debu
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\main.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -64,7 +64,7 @@ build CMakeFiles/Light.dir/Core/Src/gpio.c.obj: C_COMPILER__Light_unscanned_Debu
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\gpio.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -74,7 +74,7 @@ build CMakeFiles/Light.dir/Core/Src/dma.c.obj: C_COMPILER__Light_unscanned_Debug
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\dma.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -84,7 +84,7 @@ build CMakeFiles/Light.dir/Core/Src/tim.c.obj: C_COMPILER__Light_unscanned_Debug
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\tim.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -94,7 +94,7 @@ build CMakeFiles/Light.dir/Core/Src/usart.c.obj: C_COMPILER__Light_unscanned_Deb
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\usart.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -104,7 +104,7 @@ build CMakeFiles/Light.dir/Core/Src/stm32f1xx_it.c.obj: C_COMPILER__Light_unscan
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\stm32f1xx_it.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -114,7 +114,7 @@ build CMakeFiles/Light.dir/Core/Src/stm32f1xx_hal_msp.c.obj: C_COMPILER__Light_u
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\stm32f1xx_hal_msp.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -124,7 +124,7 @@ build CMakeFiles/Light.dir/Core/Src/sysmem.c.obj: C_COMPILER__Light_unscanned_De
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\sysmem.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -134,7 +134,7 @@ build CMakeFiles/Light.dir/Core/Src/syscalls.c.obj: C_COMPILER__Light_unscanned_
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\syscalls.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -144,7 +144,7 @@ build CMakeFiles/Light.dir/Core/Src/buzzer.c.obj: C_COMPILER__Light_unscanned_De
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\buzzer.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -154,7 +154,7 @@ build CMakeFiles/Light.dir/Core/Src/fatigue_feedback.c.obj: C_COMPILER__Light_un
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\fatigue_feedback.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -164,7 +164,7 @@ build CMakeFiles/Light.dir/Core/Src/uart_protocol.c.obj: C_COMPILER__Light_unsca
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\uart_protocol.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -174,7 +174,7 @@ build CMakeFiles/Light.dir/Core/Src/ws2812b.c.obj: C_COMPILER__Light_unscanned_D
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\Core\Src\ws2812b.c.obj.d
   FLAGS = -mcpu=cortex-m3  -Wall -fdata-sections -ffunction-sections -O0 -g3 -std=gnu11
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir\Core\Src
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir
@@ -184,7 +184,7 @@ build CMakeFiles/Light.dir/startup_stm32f103xb.s.obj: ASM_COMPILER__Light_unscan
   DEFINES = -DDEBUG -DSTM32F103xB -DUSE_HAL_DRIVER
   DEP_FILE = CMakeFiles\Light.dir\startup_stm32f103xb.s.obj.d
   FLAGS = -mcpu=cortex-m3  -x assembler-with-cpp -MMD -MP -g
-  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
+  INCLUDES = -ID:/guangdian/26-Light/stm32/Light/Core/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Core/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include -ID:/guangdian/26-Light/stm32/Light/cmake/stm32cubemx/../../Drivers/CMSIS/Include
   OBJECT_DIR = CMakeFiles\Light.dir
   OBJECT_FILE_DIR = CMakeFiles\Light.dir
   TARGET_SUPPORT_DIR = CMakeFiles\Light.dir

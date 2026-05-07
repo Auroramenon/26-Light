@@ -7,6 +7,7 @@
 
 import argparse
 import time
+import numpy as np
 
 from config import CONFIG
 from capture.camera import Camera
@@ -140,7 +141,7 @@ def main():
                     current_box = tracked
 
             # --- 行为特征（每帧都跑 MediaPipe） ---
-            rgb_frame = frame[:, :, ::-1]
+            rgb_frame = np.ascontiguousarray(frame[:, :, ::-1])
             mp_result = mp_face.process(rgb_frame)
             landmarks = None
             if mp_result.multi_face_landmarks:
@@ -152,6 +153,7 @@ def main():
 
             # --- ROI + rPPG ---
             roi_coords = None
+            sent_to_strip = False
             if current_box is not None:
                 roi = extract_roi(frame, current_box, cfg)
                 roi_coords = get_roi_coords(current_box, cfg, frame.shape)
@@ -179,8 +181,16 @@ def main():
                             level = classifier.update(fatigue_score, risks)
 
                             serial_out.send(level, hr, now=now)
+                            sent_to_strip = True
                         except Exception as e:
                             print(f"[rPPG] 处理异常: {e}")
+
+            if not sent_to_strip:
+                # 当 rPPG / HRV 尚未就绪时，仍然基于摄像头行为特征进行等级评估并同步灯带状态
+                fatigue_score, risks = fuser.fuse(
+                    hrv_features, perclos, yawn_rate, head_pitch)
+                level = classifier.update(fatigue_score, risks)
+                serial_out.send(level, hr, now=now)
 
             if now - last_status_log >= 5.0:
                 serial_status = serial_out.status()

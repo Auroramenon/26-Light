@@ -21,6 +21,9 @@ endif()
 # Set the project name
 set(CMAKE_PROJECT_NAME Light)
 
+# Set the toolchain file for ARM cross-compilation
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/gcc-arm-none-eabi.cmake)
+
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -44,12 +47,26 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
+    # User application sources
+    Core/Src/buzzer.c
+    Core/Src/ws2812b.c
+    Core/Src/uart_protocol.c
+    Core/Src/fatigue_feedback.c
+
+    # Note: Other sources (main.c, gpio.c, tim.c, usart.c, dma.c, etc.)
+    # are already included by cmake/stm32cubemx/CMakeLists.txt
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined include paths
+    # User include directories
+    Core/Inc
+
+    # CMSIS and HAL includes (from stm32cubemx subdirectory)
+    Drivers/CMSIS/Include
+    Drivers/CMSIS/Device/ST/STM32F1xx/Include
+    Drivers/STM32F1xx_HAL_Driver/Inc
+    Drivers/STM32F1xx_HAL_Driver/Inc/Legacy
 )
 
 # Add project symbols (macros)

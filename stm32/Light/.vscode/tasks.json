@@ -1,0 +1,87 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "STM32: Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build/Debug",
+                "--target",
+                "all",
+                "--",
+                "-j4"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "STM32: Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-B${workspaceFolder}/build/Debug",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-GNinja",
+                "${workspaceFolder}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "STM32: Build & Flash",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build/Debug"
+            ],
+            "dependsOn": [],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "STM32: Flash via STM32CubeProgrammer",
+            "type": "shell",
+            "command": "PowerShell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& {$programmerPath = 'C:\\Program Files\\STMicroelectronics\\STM32Cube\\STM32CubeProgrammer\\bin\\STM32_Programmer_CLI.exe'; $elfFile = '${workspaceFolder}/build/Debug/Light.elf'; if(Test-Path $programmerPath) { & $programmerPath -c port=SWD -w $elfFile -rst } else { Write-Error 'STM32CubeProgrammer not found' }}"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": true
+            }
+        },
+        {
+            "label": "STM32: Compile & Flash",
+            "type": "shell",
+            "isBackground": false,
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "STM32: Build",
+                "STM32: Flash via STM32CubeProgrammer"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

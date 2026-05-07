@@ -4,16 +4,13 @@ set(CMAKE_SYSTEM_PROCESSOR          arm)
 set(CMAKE_C_COMPILER_ID GNU)
 set(CMAKE_CXX_COMPILER_ID GNU)
 
-# Some default GCC settings
-# arm-none-eabi- must be part of path environment
-set(TOOLCHAIN_PREFIX                arm-none-eabi-)
-
-set(CMAKE_C_COMPILER                ${TOOLCHAIN_PREFIX}gcc)
+# arm-none-eabi tools must be in PATH
+set(CMAKE_C_COMPILER                arm-none-eabi-gcc)
 set(CMAKE_ASM_COMPILER              ${CMAKE_C_COMPILER})
-set(CMAKE_CXX_COMPILER              ${TOOLCHAIN_PREFIX}g++)
-set(CMAKE_LINKER                    ${TOOLCHAIN_PREFIX}g++)
-set(CMAKE_OBJCOPY                   ${TOOLCHAIN_PREFIX}objcopy)
-set(CMAKE_SIZE                      ${TOOLCHAIN_PREFIX}size)
+set(CMAKE_CXX_COMPILER              arm-none-eabi-g++)
+set(CMAKE_LINKER                    arm-none-eabi-g++)
+set(CMAKE_OBJCOPY                   arm-none-eabi-objcopy)
+set(CMAKE_SIZE                      arm-none-eabi-size)
 
 set(CMAKE_EXECUTABLE_SUFFIX_ASM     ".elf")
 set(CMAKE_EXECUTABLE_SUFFIX_C       ".elf")

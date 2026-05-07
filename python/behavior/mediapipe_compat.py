@@ -93,8 +93,9 @@ class FaceMeshWrapper:
                 if not isinstance(image, mp.Image):
                     # 如果是numpy数组，转换为Image
                     if isinstance(image, np.ndarray):
-                        # 确保是RGB格式
+                        # 确保是RGB格式并且内存连续，避免 MediaPipe 对视图数组的构造失败
                         if len(image.shape) == 3 and image.shape[2] == 3:
+                            image = np.ascontiguousarray(image)
                             mp_image = mp.Image(mp.ImageFormat.SRGB, image)
                         else:
                             raise ValueError(f"Image shape {image.shape} not supported")
