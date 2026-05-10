@@ -12,5 +12,7 @@
   "terminal.integrated.env.windows": {
     "PYTHONPATH": "${workspaceFolder}/python"
   },
-  "cmake.sourceDirectory": "D:/guangdian/26-Light/stm32/Light"
+  "cmake.sourceDirectory": "${workspaceFolder}/stm32/Light",
+  "python-envs.defaultEnvManager": "ms-python.python:venv",
+  "python-envs.defaultPackageManager": "ms-python.python:pip"
 }

@@ -121,8 +121,8 @@ class FatigueClassifier:
                 return 1
             if score >= up_thresholds[2]:
                 return 3
-            return 2
-
+            return 2                                      
+        
         # cur == 3
         if score < down_thresholds[2]:
             if score < down_thresholds[1]:
