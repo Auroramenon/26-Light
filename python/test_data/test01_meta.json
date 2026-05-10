@@ -1,0 +1,35 @@
+{
+  "session_name": "test01",
+  "start_time": "2026-05-10T16:58:29.480708",
+  "end_time": "2026-05-10T16:59:25.292865",
+  "total_records": 52,
+  "sample_interval": 1.0,
+  "config": {
+    "camera_fps": 30,
+    "signal_window_sec": 10,
+    "hrv_window_sec": 60,
+    "rppg_method": "NIR_ADV",
+    "face_det_backend": "HC",
+    "fatigue_thresholds": [
+      0.35,
+      0.55,
+      0.75
+    ],
+    "upgrade_thresholds": [
+      0.35,
+      0.55,
+      0.75
+    ],
+    "downgrade_thresholds": [
+      0.25,
+      0.45,
+      0.65
+    ],
+    "weights": {
+      "w_hrv": 0.2,
+      "w_perclos": 0.5,
+      "w_yawn": 0.15,
+      "w_head": 0.15
+    }
+  }
+}

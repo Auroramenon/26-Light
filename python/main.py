@@ -3,6 +3,7 @@
 用法:
     python main.py
     python main.py --camera 1 --serial COM5 --method POS --no-serial
+    python main.py --record --session test_001  # 启用数据记录
 """
 
 import argparse
@@ -27,6 +28,7 @@ from fusion.feature_fusion import FeatureFuser
 from fusion.fatigue_classifier import FatigueClassifier, LEVEL_NAMES
 from comm.serial_sender import SerialSender
 from gui.display import Display
+from data_logger.recorder import DataRecorder
 
 
 def parse_args():
@@ -37,6 +39,10 @@ def parse_args():
     p.add_argument("--no-serial", action="store_true", help="禁用串口")
     p.add_argument("--no-gui", action="store_true", help="禁用GUI")
     p.add_argument("--face-backend", type=str, default=None, choices=["HC", "Y5F"])
+    p.add_argument("--record", action="store_true", help="启用数据记录")
+    p.add_argument("--session", type=str, default=None, help="测试会话名称")
+    p.add_argument("--output-dir", type=str, default="test_data", help="数据输出目录")
+    p.add_argument("--sample-interval", type=float, default=1.0, help="数据采样间隔（秒），默认1.0")
     return p.parse_args()
 
 
@@ -97,6 +103,17 @@ def main():
     # 有状态的融合器和分类器
     fuser = FeatureFuser(cfg)
     classifier = FatigueClassifier(cfg)
+
+    # 数据记录器（可选）
+    recorder = None
+    if args.record:
+        recorder = DataRecorder(
+            output_dir=args.output_dir,
+            session_name=args.session,
+            sample_interval=args.sample_interval
+        )
+        recorder.set_config(cfg)
+        print(f"[系统] 数据记录已启用: {recorder.session_name}")
 
     # 状态变量
     last_detect_time = 0.0
@@ -204,7 +221,22 @@ def main():
                     f"串口={serial_status['state']} fail={serial_status['failures']} "
                     f"drop={serial_status['rate_limited_drops']}"
                 )
+                if recorder:
+                    print(f"[记录] {recorder.get_summary()}")
                 last_status_log = now
+
+            # --- 数据记录 ---
+            if recorder:
+                recorder.record({
+                    "hr": hr,
+                    "hrv_features": hrv_features,
+                    "perclos": perclos,
+                    "yawn_rate": yawn_rate,
+                    "head_pitch": head_pitch,
+                    "fatigue_score": fatigue_score,
+                    "fatigue_level": level,
+                    "risks": risks if 'risks' in locals() else {}
+                })
 
             # --- GUI ---
             display.render(
@@ -223,6 +255,8 @@ def main():
         serial_out.close()
         display.close()
         mp_face.close()
+        if recorder:
+            recorder.close()
         print("[系统] 已退出")
 
 

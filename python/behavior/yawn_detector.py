@@ -40,7 +40,10 @@ class YawnDetector:
         self._in_yawn = False
         # 记录最近60秒的哈欠时间戳
         self._yawn_times = collections.deque()
-        self._window = 60.0  # 秒
+        self._window = config.get("yawn_window_sec", 60.0)  # 秒，可配置
+        # 衰减机制：哈欠记录会随时间衰减
+        self._enable_decay = config.get("yawn_decay_enabled", True)
+        self._decay_window = config.get("yawn_decay_window", 30.0)  # 30秒后开始衰减
 
     def update(self, face_landmarks):
         """输入 MediaPipe face_landmarks，返回每分钟哈欠次数
@@ -56,7 +59,7 @@ class YawnDetector:
         if face_landmarks is None:
             self._consecutive = 0
             self._in_yawn = False
-            return self.get_yawn_rate()
+            return self.get_yawn_rate(now)
 
         mar = _mouth_aspect_ratio(face_landmarks)
 
@@ -69,8 +72,34 @@ class YawnDetector:
             self._consecutive = 0
             self._in_yawn = False
 
-        return self.get_yawn_rate()
+        return self.get_yawn_rate(now)
 
-    def get_yawn_rate(self):
-        """返回每分钟哈欠次数"""
-        return len(self._yawn_times)
+    def get_yawn_rate(self, now=None):
+        """返回每分钟哈欠次数（带衰减）"""
+        if now is None:
+            now = time.time()
+
+        if not self._enable_decay:
+            # 不启用衰减，直接返回计数
+            return len(self._yawn_times)
+
+        # 启用衰减：超过decay_window的哈欠记录权重降低
+        total_weight = 0.0
+        for yawn_time in self._yawn_times:
+            age = now - yawn_time
+            if age <= self._decay_window:
+                # 30秒内，权重为1.0
+                weight = 1.0
+            else:
+                # 30秒后，线性衰减到0（在60秒时完全消失）
+                remaining = self._window - age
+                weight = max(0.0, remaining / (self._window - self._decay_window))
+            total_weight += weight
+
+        return total_weight
+
+    def reset(self):
+        """重置哈欠历史记录"""
+        self._yawn_times.clear()
+        self._consecutive = 0
+        self._in_yawn = False
