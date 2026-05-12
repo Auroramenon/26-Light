@@ -142,16 +142,15 @@ class FatigueClassifier:
         3. 哈欠+低头的组合指标，两者同时出现才有说服力
         """
         # 强证据1：PERCLOS达到高风险（最可靠）
-        if risks.get("perclos", 0) >= cfg.get("level3_min_perclos_risk", 0.90):
+        if risks.get("perclos", 0) >= cfg.get("level3_min_perclos_risk", 0.70):
             return True
 
         # 强证据2：HRV达到高风险
-        if risks.get("hrv", 0) >= cfg.get("level3_min_hrv_risk", 0.80):
+        if risks.get("hrv", 0) >= cfg.get("level3_min_hrv_risk", 0.70):
             return True
 
-        # 强证据3：哈欠+低头组合（两者都需要较高）
-        if (risks.get("yawn", 0) >= cfg.get("level3_min_yawn_risk", 0.70)
-                and risks.get("head", 0) >= cfg.get("level3_min_head_risk", 0.60)):
+        # 强证据3：哈欠风险单独达到高风险
+        if risks.get("yawn", 0) >= cfg.get("level3_min_yawn_risk", 0.70):
             return True
 
         return False

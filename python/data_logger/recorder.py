@@ -132,17 +132,14 @@ class DataRecorder:
     def _select_representative_data(self):
         """从待处理数据中选择最具代表性的一条
 
-        策略：选择疲劳等级最高的数据，如果等级相同则选择评分最高的
-        这样可以确保不会遗漏重要的疲劳信号
+        策略：按疲劳评分排序后取中位数帧，避免选最大值导致系统性高估。
         """
         if not self.pending_data:
             return None
 
-        # 按疲劳等级和评分排序，选择最严重的状态
-        selected = max(self.pending_data,
-                      key=lambda x: (x[1].get("fatigue_level", 0),
-                                   x[1].get("fatigue_score", 0)))
-        return selected
+        sorted_data = sorted(self.pending_data,
+                             key=lambda x: x[1].get("fatigue_score", 0))
+        return sorted_data[len(sorted_data) // 2]
 
     def _write_record(self, data_tuple):
         """写入一条记录到CSV文件

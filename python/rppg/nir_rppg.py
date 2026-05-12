@@ -176,14 +176,15 @@ def extract_nir_bvp_robust(roi_frames, fs, bandpass_low=0.7, bandpass_high=4.0):
     signals = np.array(signals)
     motion_scores = np.array(motion_scores)
 
-    # 运动伪影抑制
+    # 运动伪影抑制：用线性插值替换运动帧，避免降权引入人为幅度跳变
     motion_threshold = np.percentile(motion_scores, 75)
-    weights = np.ones_like(signals)
-    weights[motion_scores > motion_threshold] = 0.5
+    bad = motion_scores > motion_threshold
+    if bad.any() and not bad.all():
+        x_all = np.arange(len(signals))
+        x_good = x_all[~bad]
+        signals = np.interp(x_all, x_good, signals[~bad])
 
-    # 加权去趋势
-    signals_weighted = signals * weights
-    detrended = detrend(signals_weighted, type='linear')
+    detrended = detrend(signals, type='linear')
 
     # 标准化
     if np.std(detrended) > 1e-6:

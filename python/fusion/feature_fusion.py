@@ -33,7 +33,7 @@ def normalize_hrv_score(hrv_features, config=None):
     - SDNN 降低 (正常 50-100ms, 疲劳 < 30ms)
     - LF/HF 升高 (交感神经兴奋, 正常 0.5-2.0, 疲劳 > 3.0)
     """
-    if not hrv_features.get("valid", True):
+    if not hrv_features.get("valid", False):
         # HRV窗口不足时采用中性低风险，避免将缺失数据当作高疲劳。
         return 0.0
 
@@ -81,7 +81,7 @@ class FeatureFuser:
             perclos, cfg.get("perclos_low", 0.15), cfg.get("perclos_high", 0.30))
 
         risk_yawn = _piecewise_linear(
-            yawn_rate, cfg.get("yawn_rate_low", 0.2), cfg.get("yawn_rate_high", 1.0))
+            yawn_rate, cfg.get("yawn_rate_low", 1.0), cfg.get("yawn_rate_high", 3.0))
 
         head_low = cfg.get("head_angle_low", cfg.get("head_pitch_threshold", 15.0))
         head_high = cfg.get("head_angle_high", 35.0)
@@ -119,7 +119,7 @@ def fuse_features(hrv_features, perclos, yawn_rate, head_pitch, config):
     risk_perclos = _piecewise_linear(
         perclos, cfg.get("perclos_low", 0.15), cfg.get("perclos_high", 0.30))
     risk_yawn = _piecewise_linear(
-        yawn_rate, cfg.get("yawn_rate_low", 0.2), cfg.get("yawn_rate_high", 1.0))
+        yawn_rate, cfg.get("yawn_rate_low", 1.0), cfg.get("yawn_rate_high", 3.0))
     head_low = cfg.get("head_angle_low", cfg.get("head_pitch_threshold", 15.0))
     head_high = cfg.get("head_angle_high", 35.0)
     risk_head = _piecewise_linear(

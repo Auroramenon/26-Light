@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* WS2812B 配置 */
-#define WS2812B_NUM_LEDS    8       /* LED 数量 */
+#define WS2812B_NUM_LEDS    30      /* LED 数量 */
 #define WS2812B_BIT0        36      /* 0 码占空比 (ARR=89, ~0.4us) */
 #define WS2812B_BIT1        64      /* 1 码占空比 (ARR=89, ~0.8us) */
 #define WS2812B_RESET_SLOTS 50      /* 复位低电平周期数 (>50us) */

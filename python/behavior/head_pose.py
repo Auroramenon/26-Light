@@ -19,11 +19,12 @@ MODEL_POINTS = np.array([
 
 
 class HeadPoseEstimator:
-    """头部姿态估计，输出俯仰角 (pitch)"""
+    """头部姿态估计，输出相对于驾驶员正视方向的俯仰角 (pitch)"""
 
     def __init__(self, config):
-        # 兼容旧配置键: head_pitch_threshold
         self.threshold = config.get("head_angle_low", config.get("head_pitch_threshold", 15.0))
+        # 摄像头安装角补偿：从测量值中减去安装偏置，还原真实头部角度
+        self._pitch_offset = config.get("camera_pitch_offset", 0.0)
         self._camera_matrix = None
         self._dist_coeffs = np.zeros((4, 1), dtype=np.float64)
 
@@ -70,5 +71,17 @@ class HeadPoseEstimator:
         rmat, _ = cv2.Rodrigues(rvec)
         angles, _, _, _, _, _ = cv2.RQDecomp3x3(rmat)
 
-        pitch = angles[0]  # 俯仰角
+        # 由于人脸3D模型坐标系与相机坐标系存在~180°偏置，
+        # RQDecomp3x3返回的angles[0]在正面时约为±180°而非0°。
+        # 将其归一化：正面→0°，低头→正值，抬头→负值。
+        raw = angles[0]
+        if raw > 90:
+            pitch = -(raw - 180)
+        elif raw < -90:
+            pitch = -(raw + 180)
+        else:
+            pitch = -raw
+
+        # 减去摄像头安装仰角，得到相对于驾驶员正视方向的真实俯仰角
+        pitch -= self._pitch_offset
         return float(pitch)

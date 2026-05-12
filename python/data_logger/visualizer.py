@@ -28,8 +28,12 @@ class DataVisualizer:
         self.df = None
         self.output_dir = os.path.dirname(csv_path)
 
-        # 设置中文字体（避免中文显示问题）
-        plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS']
+        # 设置中文字体（Linux 使用 Noto CJK JP，Windows 使用 SimHei/微软雅黑）
+        plt.rcParams['font.sans-serif'] = [
+            'Noto Sans CJK JP', 'Noto Serif CJK JP',
+            'Noto Sans CJK SC', 'WenQuanYi Micro Hei',
+            'SimHei', 'Microsoft YaHei', 'Arial Unicode MS', 'DejaVu Sans'
+        ]
         plt.rcParams['axes.unicode_minus'] = False
 
         # 加载数据

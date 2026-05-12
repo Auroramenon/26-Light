@@ -1,4 +1,4 @@
-"""疲劳驾驶光电预警系统 — 主程序入口
+"""疲劳驾驶光电预警系统 — 主程序入口stm
 
 用法:
     python main.py
@@ -8,6 +8,7 @@
 
 import argparse
 import time
+import cv2
 import numpy as np
 
 from config import CONFIG
@@ -89,9 +90,14 @@ def main():
             use_neural = False
 
     # MediaPipe Face Mesh（行为检测共用）
+    # NIR模式降低置信度阈值：MediaPipe在近红外图像上特征响应较弱
+    _mp_conf = 0.3 if cfg.get("is_nir_camera", False) else 0.5
     mp_face = get_face_mesh(
         max_num_faces=1, refine_landmarks=True,
-        min_detection_confidence=0.5, min_tracking_confidence=0.5)
+        min_detection_confidence=_mp_conf, min_tracking_confidence=_mp_conf)
+
+    # NIR图像预处理：CLAHE自适应直方图均衡，提升MediaPipe在近红外下的检测率
+    _clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)) if cfg.get("is_nir_camera", False) else None
 
     eye_det = EyeDetector(cfg)
     yawn_det = YawnDetector(cfg)
@@ -117,8 +123,10 @@ def main():
 
     # 状态变量
     last_detect_time = 0.0
+    last_rppg_time = 0.0     # BVP/HR 节流时间戳
     current_box = None
     hr = 0.0
+    _hr_prev = None          # HR EMA 平滑状态
     level = 0
     fatigue_score = 0.0
     perclos = 0.0
@@ -128,6 +136,10 @@ def main():
     hrv_features = {}
     hrv_reason = "not_ready"
     last_status_log = 0.0
+    # MediaPipe 降频：ARM 上每 N 帧推理一次，中间帧复用上次 landmark
+    _mp_interval = cfg.get("mediapipe_interval", 3)  # 默认 10Hz@30fps
+    _mp_frame_count = 0
+    _cached_landmarks = None
 
     print("[系统] 初始化完成，开始运行 (按 q 退出)")
     print(f"[配置] 相机={cfg['camera_index']} 后端={camera.backend_name} 方法={cfg['rppg_method']} "
@@ -157,12 +169,19 @@ def main():
                 if tracked is not None:
                     current_box = tracked
 
-            # --- 行为特征（每帧都跑 MediaPipe） ---
-            rgb_frame = np.ascontiguousarray(frame[:, :, ::-1])
-            mp_result = mp_face.process(rgb_frame)
-            landmarks = None
-            if mp_result.multi_face_landmarks:
-                landmarks = mp_result.multi_face_landmarks[0].landmark
+            # --- 行为特征（每 _mp_interval 帧推理一次，ARM 降负载） ---
+            _mp_frame_count += 1
+            if _mp_frame_count % _mp_interval == 0:
+                if _clahe is not None:
+                    _gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    _eq = _clahe.apply(_gray)
+                    rgb_frame = np.ascontiguousarray(np.stack([_eq, _eq, _eq], axis=-1))
+                else:
+                    rgb_frame = np.ascontiguousarray(frame[:, :, ::-1])
+                mp_result = mp_face.process(rgb_frame)
+                _cached_landmarks = (mp_result.multi_face_landmarks[0].landmark
+                                     if mp_result.multi_face_landmarks else None)
+            landmarks = _cached_landmarks
 
             perclos = eye_det.update(landmarks)
             yawn_rate = yawn_det.update(landmarks)
@@ -178,7 +197,9 @@ def main():
                 if roi is not None:
                     sig_buf.append(roi)
 
-                    if sig_buf.is_ready():
+                    rppg_interval = cfg.get("rppg_update_interval_sec", 1.0)
+                    if sig_buf.is_ready() and (now - last_rppg_time) >= rppg_interval:
+                        last_rppg_time = now
                         try:
                             short_frames = sig_buf.get_frames()
                             if use_neural and neural_rppg is not None:
@@ -186,7 +207,14 @@ def main():
                             else:
                                 bvp = extract_bvp(short_frames, fps, cfg["rppg_method"], cfg.get("is_nir_camera", False))
 
-                            hr = estimate_hr(bvp, fps, cfg["bandpass_low"], cfg["bandpass_high"])
+                            hr_raw = estimate_hr(bvp, fps, cfg["bandpass_low"], cfg["bandpass_high"])
+                            _hr_alpha = cfg.get("hr_ema_alpha", 0.3)
+                            if hr_raw > 0:
+                                if _hr_prev is None:
+                                    hr = hr_raw
+                                else:
+                                    hr = _hr_alpha * hr_raw + (1.0 - _hr_alpha) * _hr_prev
+                                _hr_prev = hr
 
                             # 从短窗口 BVP 提取 IBI 并累积到 60s 滑窗
                             ibi_acc.feed_bvp(bvp, fps)
