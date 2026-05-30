@@ -7,6 +7,7 @@
 """
 
 import argparse
+import signal
 import time
 import cv2
 import numpy as np
@@ -30,6 +31,7 @@ from fusion.fatigue_classifier import FatigueClassifier, LEVEL_NAMES
 from comm.serial_sender import SerialSender
 from gui.display import Display
 from data_logger.recorder import DataRecorder
+from display.oled_screen import OLEDScreen
 
 
 def parse_args():
@@ -49,6 +51,10 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    # systemd stop 发送 SIGTERM，默认不触发 finally 收尾（不清屏、不释放设备）。
+    # 转成 KeyboardInterrupt，复用下方 try/finally 的优雅退出逻辑。
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
 
     # 合并命令行参数到配置
     cfg = dict(CONFIG)
@@ -105,6 +111,22 @@ def main():
 
     serial_out = SerialSender(cfg)
     display = Display(cfg)
+
+    oled = None
+    if cfg.get("oled_enabled", False):
+        try:
+            oled = OLEDScreen(
+                chip=cfg["oled_gpio_chip"],
+                dc_line=cfg["oled_dc_line"],
+                rst_line=cfg["oled_rst_line"],
+                port=cfg["oled_spi_port"],
+                device=cfg["oled_spi_device"],
+            )
+            oled.show_boot_screen()
+        except Exception as e:
+            print(f"[WARN] 小屏幕初始化失败，跳过: {e}")
+            oled = None
+    last_oled_update = 0.0
 
     # 有状态的融合器和分类器
     fuser = FeatureFuser(cfg)
@@ -207,18 +229,35 @@ def main():
                             else:
                                 bvp = extract_bvp(short_frames, fps, cfg["rppg_method"], cfg.get("is_nir_camera", False))
 
-                            hr_raw = estimate_hr(bvp, fps, cfg["bandpass_low"], cfg["bandpass_high"])
-                            _hr_alpha = cfg.get("hr_ema_alpha", 0.3)
-                            if hr_raw > 0:
-                                if _hr_prev is None:
-                                    hr = hr_raw
-                                else:
-                                    hr = _hr_alpha * hr_raw + (1.0 - _hr_alpha) * _hr_prev
-                                _hr_prev = hr
+                            hr_fft = estimate_hr(bvp, fps, cfg["bandpass_low"], cfg["bandpass_high"])
 
                             # 从短窗口 BVP 提取 IBI 并累积到 60s 滑窗
                             ibi_acc.feed_bvp(bvp, fps)
                             hrv_features = ibi_acc.compute()
+
+                            # 心率融合：IBI峰间隔法比FFT更准，优先采用
+                            # 要求至少8个IBI且与FFT结果偏差 <25 BPM 才信任IBI心率
+                            ibi_hr = hrv_features.get("mean_hr", 0.0)
+                            ibi_valid = (
+                                hrv_features.get("valid", False)
+                                and hrv_features.get("ibi_count", 0) >= 8
+                                and 40.0 < ibi_hr < 180.0
+                                and (hr_fft <= 0 or abs(ibi_hr - hr_fft) < 25.0)
+                            )
+                            if ibi_valid:
+                                hr_candidate = ibi_hr
+                            elif hr_fft > 0:
+                                hr_candidate = hr_fft
+                            else:
+                                hr_candidate = 0.0
+
+                            _hr_alpha = cfg.get("hr_ema_alpha", 0.3)
+                            if hr_candidate > 0:
+                                if _hr_prev is None:
+                                    hr = hr_candidate
+                                else:
+                                    hr = _hr_alpha * hr_candidate + (1.0 - _hr_alpha) * _hr_prev
+                                _hr_prev = hr
                             hrv_reason = hrv_features.get("reason", "ok")
 
                             fatigue_score, risks = fuser.fuse(
@@ -266,6 +305,14 @@ def main():
                     "risks": risks if 'risks' in locals() else {}
                 })
 
+            # --- 小屏幕刷新 ---
+            if oled is not None and (now - last_oled_update) >= cfg["oled_update_interval"]:
+                try:
+                    oled.update(level, hr, fatigue_score, perclos, yawn_rate)
+                    last_oled_update = now
+                except Exception as e:
+                    print(f"[WARN] 小屏幕刷新失败: {e}")
+
             # --- GUI ---
             display.render(
                 frame, box=current_box, roi_coords=roi_coords,
@@ -285,6 +332,8 @@ def main():
         mp_face.close()
         if recorder:
             recorder.close()
+        if oled is not None:
+            oled.clear()
         print("[系统] 已退出")
 
 
