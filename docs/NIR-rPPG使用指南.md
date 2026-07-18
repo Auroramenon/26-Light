@@ -18,9 +18,8 @@
 
 | 硬件 | 规格 | 状态 |
 |------|------|------|
-| 近红外相机 | 850nm, 1080P, USB UVC | ✅ 已有 |
-| 850nm滤光片 | 仅通过850nm光 | ✅ 已有 |
-| 850nm LED补光灯 | 48颗LED阵列，3-5W | ✅ 已有 |
+| 近红外相机 | 850nm, 1080P, USB UVC | ✅ 已有 |不带滤光片
+| 850nm LED补光灯 | 6颗LED阵列，3-5W | ✅ 已有 |
 | STM32开发板 | STM32F103C8T6 | ✅ 已有 |
 | WS2812B灯带 | 8颗LED | ✅ 已有 |
 | 蜂鸣器模块 | 有源蜂鸣器 | ✅ 已有 |
@@ -67,12 +66,12 @@
 
 # HRV配置（NIR模式优化）
 "nir_hrv_mode": "simplified",   # 简化模式：仅用心率
-"hrv_min_ibi_count": 40,        # 最少IBI数量
+"hrv_min_ibi_count": 20,        # 最少IBI数量
 
 # 融合权重（针对NIR优化）
 "w_hrv": 0.20,                  # HRV权重降低
-"w_perclos": 0.40,              # PERCLOS权重提高
-"w_yawn": 0.25,                 # 哈欠权重提高
+"w_perclos": 0.30,              # PERCLOS权重提高
+"w_yawn": 0.35,                 # 哈欠权重提高
 "w_head": 0.15,                 # 头姿权重
 ```
 
@@ -231,7 +230,7 @@ self.cap.set(cv2.CAP_PROP_GAIN, 50)      # 增加增益
 **解决方案**：
 ```python
 # 增加平滑系数
-"ema_alpha": 0.2,  # 从0.3降到0.2（更平滑）
+"ema_alpha": 0.3,  # 从0.3降到0.2（更平滑）
 
 # 增加持续性约束
 "hold_seconds": 8,  # 从5秒增加到8秒

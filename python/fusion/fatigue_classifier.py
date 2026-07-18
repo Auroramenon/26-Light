@@ -38,14 +38,20 @@ class FatigueClassifier:
 
         now = time.time()
 
-        # --- 自动恢复机制：在疲劳等级持续一定时间后自动恢复到Level 0 ---
+        # --- 自动恢复机制：仅用于消除“误报卡死”，绝不在驾驶员仍疲劳时静默 ---
+        # 安全约束：只有当前证据已明显减弱（评分低于该等级的降级阈值）时，才允许超时自动恢复。
+        # 若评分仍高（驾驶员确实处于疲劳），报警必须持续，不得因计时到点而清零。
         if self._auto_reset_enabled and self.current_level > 0:
             if self._level_enter_time is not None:
                 duration = now - self._level_enter_time
                 reset_duration = self._auto_reset_durations.get(self.current_level, 5.0)
 
-                if duration >= reset_duration:
-                    # 持续时间到达，自动恢复到Level 0
+                down = cfg.get("downgrade_thresholds", [0.25, 0.45, 0.65])
+                idx = min(self.current_level - 1, len(down) - 1)
+                sustain_thr = down[idx]
+
+                if duration >= reset_duration and fatigue_score < sustain_thr:
+                    # 计时到点且证据已减弱，自动恢复到Level 0
                     self.current_level = 0
                     self._candidate_level = 0
                     self._candidate_since = now

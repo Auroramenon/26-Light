@@ -210,31 +210,31 @@ class DataVisualizer:
         print(f"  - 已生成: {output_path}")
 
     def plot_risks(self, prefix):
-        """绘制各路风险分布"""
-        fig, ax = plt.subplots(figsize=(14, 6))
-        fig.suptitle('风险分布', fontsize=16, fontweight='bold')
+        """为每类风险单独生成一张图（共4张）"""
+        risks = [
+            ('risk_hrv',     'HRV风险',    'g'),
+            ('risk_perclos', 'PERCLOS风险', 'r'),
+            ('risk_yawn',    '哈欠风险',    'orange'),
+            ('risk_head',    '头姿风险',    'purple'),
+        ]
+        suffixes = ['risk_hrv', 'risk_perclos', 'risk_yawn', 'risk_head']
 
-        ax.plot(self.df['elapsed_time'], self.df['risk_hrv'],
-                'g-', linewidth=1.5, label='HRV风险', alpha=0.7)
-        ax.plot(self.df['elapsed_time'], self.df['risk_perclos'],
-                'r-', linewidth=1.5, label='PERCLOS风险', alpha=0.7)
-        ax.plot(self.df['elapsed_time'], self.df['risk_yawn'],
-                'orange', linewidth=1.5, label='哈欠风险', alpha=0.7)
-        ax.plot(self.df['elapsed_time'], self.df['risk_head'],
-                'purple', linewidth=1.5, label='头姿风险', alpha=0.7)
+        for (col, title, color), suffix in zip(risks, suffixes):
+            fig, ax = plt.subplots(figsize=(14, 5))
+            fig.suptitle(title, fontsize=16, fontweight='bold')
 
-        ax.set_xlabel('时间 (秒)', fontsize=12)
-        ax.set_ylabel('风险分 (0-1)', fontsize=12)
-        ax.set_title('各路风险分时间序列', fontsize=13)
-        ax.set_ylim([0, 1])
-        ax.grid(True, alpha=0.3)
-        ax.legend(loc='upper left')
+            ax.plot(self.df['elapsed_time'], self.df[col],
+                    color=color, linewidth=1.5)
+            ax.set_xlabel('时间 (秒)', fontsize=12)
+            ax.set_ylabel('风险分 (0-1)', fontsize=12)
+            ax.set_ylim([0, 1])
+            ax.grid(True, alpha=0.3)
 
-        plt.tight_layout()
-        output_path = os.path.join(self.output_dir, f"{prefix}_risks.png")
-        plt.savefig(output_path, dpi=150, bbox_inches='tight')
-        plt.close()
-        print(f"  - 已生成: {output_path}")
+            plt.tight_layout()
+            output_path = os.path.join(self.output_dir, f"{prefix}_{suffix}.png")
+            plt.savefig(output_path, dpi=150, bbox_inches='tight')
+            plt.close()
+            print(f"  - 已生成: {output_path}")
 
     def plot_dashboard(self, prefix):
         """绘制综合仪表板"""
@@ -301,7 +301,7 @@ class DataVisualizer:
         level_counts = self.df['fatigue_level'].value_counts().sort_index()
         colors_bar = ['green', 'yellow', 'orange', 'red']
         ax.bar(level_counts.index, level_counts.values,
-               color=[colors_bar[i] for i in level_counts.index], alpha=0.7)
+               color=[colors_bar[int(i)] for i in level_counts.index], alpha=0.7)
         ax.set_xlabel('疲劳等级')
         ax.set_ylabel('记录数')
         ax.set_title('疲劳等级分布')

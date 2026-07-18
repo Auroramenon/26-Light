@@ -15,9 +15,10 @@ from config import CONFIG
 from capture.camera import Camera
 from face.detector import FaceDetector
 from face.tracker import FaceTracker
-from face.roi import extract_roi, get_roi_coords
+from face.roi import extract_roi, get_roi_coords, extract_reference_region
 from rppg.signal_buffer import SignalBuffer
 from rppg.unsupervised import extract_bvp
+from rppg.signal_quality import compute_bvp_sqi, hrv_confidence, behavior_confidence
 from rppg.neural import NeuralRPPG
 from rppg.hr_estimator import estimate_hr
 from rppg.hrv_analyzer import IBIAccumulator
@@ -68,11 +69,21 @@ def main():
     # 初始化各模块
     print("[系统] 正在初始化...")
     camera = Camera(cfg)
-    fps = cfg["camera_fps"]
+    # 用相机实际帧率驱动 rPPG DSP（缓冲长度、FFT→BPM 换算），
+    # 避免非 30fps 硬件因沿用标称帧率导致的系统性心率偏差。
+    _measured_fps = float(camera.fps) if camera.fps else float(cfg["camera_fps"])
+    fps = float(np.clip(_measured_fps, 10.0, 60.0))
+    if abs(fps - cfg["camera_fps"]) >= 1.0:
+        print(f"[相机] 实测帧率 {fps:.1f} FPS 与标称 {cfg['camera_fps']} 不同，"
+              f"以实测值驱动信号处理")
 
     face_det = FaceDetector(cfg)
     tracker = FaceTracker()
     sig_buf = SignalBuffer(fps, cfg["signal_window_sec"])
+    # 参考区滑窗（环境红外共模抑制用），与 sig_buf 逐帧对齐
+    ref_buf = (SignalBuffer(fps, cfg["signal_window_sec"])
+               if cfg.get("illum_rejection_enabled", False)
+               and cfg.get("rppg_method", "") == "NIR_CMR" else None)
     ibi_acc = IBIAccumulator(
         window_sec=cfg["hrv_window_sec"],
         update_interval=cfg.get("hrv_update_interval_sec", 1.0))
@@ -136,6 +147,15 @@ def main():
     hrv_features = {}
     hrv_reason = "not_ready"
     last_status_log = 0.0
+    _last_ref = None         # 上一帧可用的参考区（无法提取时复用，保持缓冲区对齐）
+    bvp_sqi = 0.0            # 最近一次 BVP 信号质量指数
+    hrv_conf = 0.0           # HRV 通道置信度（用于自适应融合）
+    risks = {}              # 各路风险分（保证 recorder/日志始终有定义）
+    last_roi_time = 0.0     # 上次成功入缓冲的时间，用于人脸丢失后的时序断裂重置
+    last_eval_time = 0.0    # 融合/分级/串口的统一评估节流时间戳
+    _cached_head_pitch = 0.0  # 头姿缓存（仅在新 landmark 到达时用 solvePnP 重算）
+    eval_interval = cfg.get("eval_interval_sec", 0.2)      # 统一评估节律（秒），默认 5Hz
+    gap_reset_sec = cfg.get("buffer_gap_reset_sec", 1.0)   # 帧序列断裂重置阈值（秒）
     # MediaPipe 降频：ARM 上每 N 帧推理一次，中间帧复用上次 landmark
     _mp_interval = cfg.get("mediapipe_interval", 3)  # 默认 10Hz@30fps
     _mp_frame_count = 0
@@ -182,30 +202,66 @@ def main():
                 _cached_landmarks = (mp_result.multi_face_landmarks[0].landmark
                                      if mp_result.multi_face_landmarks else None)
             landmarks = _cached_landmarks
+            _fresh_landmarks = (_mp_frame_count % _mp_interval == 0)
 
             perclos = eye_det.update(landmarks)
             yawn_rate = yawn_det.update(landmarks)
-            head_pitch = head_est.update(landmarks, frame.shape)
+            # 头姿 solvePnP 开销较大：仅在有新 landmark 时重算，其余帧复用缓存
+            if _fresh_landmarks:
+                _cached_head_pitch = head_est.update(landmarks, frame.shape)
+            head_pitch = _cached_head_pitch
 
-            # --- ROI + rPPG ---
+            # --- ROI + rPPG（仅负责更新 bvp/hr/hrv/sqi，不做分级下发） ---
             roi_coords = None
-            sent_to_strip = False
             if current_box is not None:
                 roi = extract_roi(frame, current_box, cfg)
                 roi_coords = get_roi_coords(current_box, cfg, frame.shape)
 
                 if roi is not None:
+                    # 人脸丢失后重新捕获：若与上次入缓冲间隔过大，说明帧序列时序断裂，
+                    # 清空缓冲并复位生理量，避免用不连续帧计算出错误心率/HRV。
+                    if last_roi_time > 0.0 and (now - last_roi_time) > gap_reset_sec:
+                        sig_buf.clear()
+                        if ref_buf is not None:
+                            ref_buf.clear()
+                        ibi_acc.reset()          # 清空断裂前的心跳间期，避免 HRV 失真
+                        hrv_features = {}
+                        hrv_reason = "not_ready"
+                        _hr_prev = None
+                        hr = 0.0
+                        bvp = None
+                        bvp_sqi = 0.0
+                        hrv_conf = 0.0
+                        last_rppg_time = 0.0
+                    last_roi_time = now
+
                     sig_buf.append(roi)
+
+                    # 参考区与 ROI 逐帧对齐入缓冲，供环境红外共模抑制使用
+                    if ref_buf is not None:
+                        ref = extract_reference_region(frame, current_box, cfg)
+                        if ref is not None:
+                            _last_ref = ref
+                        ref_buf.append(_last_ref if _last_ref is not None
+                                       else np.zeros_like(roi))
 
                     rppg_interval = cfg.get("rppg_update_interval_sec", 1.0)
                     if sig_buf.is_ready() and (now - last_rppg_time) >= rppg_interval:
                         last_rppg_time = now
                         try:
                             short_frames = sig_buf.get_frames()
+                            ref_frames = ref_buf.get_frames() if ref_buf is not None else None
                             if use_neural and neural_rppg is not None:
                                 bvp = neural_rppg.predict(short_frames)
                             else:
-                                bvp = extract_bvp(short_frames, fps, cfg["rppg_method"], cfg.get("is_nir_camera", False))
+                                bvp = extract_bvp(short_frames, fps, cfg["rppg_method"],
+                                                  cfg.get("is_nir_camera", False),
+                                                  ref_frames=ref_frames)
+
+                            # 信号质量指数（SQI）→ HRV 通道置信度
+                            bvp_sqi = compute_bvp_sqi(
+                                bvp, fps,
+                                cfg.get("sqi_band_low", 0.7), cfg.get("sqi_band_high", 2.5))
 
                             hr_raw = estimate_hr(bvp, fps, cfg["bandpass_low"], cfg["bandpass_high"])
                             _hr_alpha = cfg.get("hr_ema_alpha", 0.3)
@@ -221,19 +277,24 @@ def main():
                             hrv_features = ibi_acc.compute()
                             hrv_reason = hrv_features.get("reason", "ok")
 
-                            fatigue_score, risks = fuser.fuse(
-                                hrv_features, perclos, yawn_rate, head_pitch)
-                            level = classifier.update(fatigue_score, risks)
-
-                            serial_out.send(level, hr, now=now)
-                            sent_to_strip = True
+                            hrv_conf = hrv_confidence(
+                                bvp_sqi, hrv_features.get("ibi_count", 0),
+                                cfg.get("hrv_min_ibi_count", 20))
                         except Exception as e:
                             print(f"[rPPG] 处理异常: {e}")
 
-            if not sent_to_strip:
-                # 当 rPPG / HRV 尚未就绪时，仍然基于摄像头行为特征进行等级评估并同步灯带状态
+            # --- 统一评估：融合 + 分级 + 串口下发（固定节律，独立于 rPPG 计算频率） ---
+            # 无论 rPPG 是否就绪都以恒定节律评估，保证 EMA 平滑时间常数稳定、串口流量可控。
+            if now - last_eval_time >= eval_interval:
+                last_eval_time = now
+                beh_conf = behavior_confidence(landmarks is not None)
+                confidences = {
+                    "hrv": hrv_conf if hrv_features.get("valid", False) else 0.0,
+                    "perclos": beh_conf, "yawn": beh_conf, "head": beh_conf,
+                }
                 fatigue_score, risks = fuser.fuse(
-                    hrv_features, perclos, yawn_rate, head_pitch)
+                    hrv_features, perclos, yawn_rate, head_pitch,
+                    confidences=confidences)
                 level = classifier.update(fatigue_score, risks)
                 serial_out.send(level, hr, now=now)
 
@@ -243,8 +304,12 @@ def main():
                 hrv_detail = ""
                 if hrv_features.get('valid', False):
                     hrv_detail = f" RMSSD={hrv_features.get('rmssd', 0):.1f} SDNN={hrv_features.get('sdnn', 0):.1f} IBI={hrv_features.get('ibi_count', 0)}"
+                _w = getattr(fuser, "_last_weights", None)
+                _w_detail = (f" w[hrv/pc/yw/hd]={_w['hrv']:.2f}/{_w['perclos']:.2f}/"
+                             f"{_w['yawn']:.2f}/{_w['head']:.2f}") if _w else ""
                 print(
                     f"[状态] level={level} score={fatigue_score:.2f} hr={hr:.0f} "
+                    f"SQI={bvp_sqi:.2f} hrv_conf={hrv_conf:.2f}{_w_detail} "
                     f"HRV={hrv_status}({hrv_reason}){hrv_detail} "
                     f"串口={serial_status['state']} fail={serial_status['failures']} "
                     f"drop={serial_status['rate_limited_drops']}"

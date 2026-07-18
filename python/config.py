@@ -34,11 +34,17 @@ CONFIG = {
 
     # ===== rPPG信号 =====
     "signal_window_sec": 8,         # 滑动窗口长度（秒）8s → FFT 分辨率 ±6 BPM
-    "rppg_method": "NIR_ADV",       # RGB模式: "CHROM"/"POS", NIR模式: "NIR"/"NIR_ADV"/"NIR_ROBUST"
+    "rppg_method": "NIR_CMR",       # RGB: "CHROM"/"POS"; NIR: "NIR"/"NIR_ADV"/"NIR_ROBUST"/"NIR_CMR"(环境红外共模抑制)
     "bandpass_low": 0.7,            # Hz (42 BPM)
     "bandpass_high": 2.5,           # Hz (150 BPM) 收窄上限减少高频噪声
     "hr_ema_alpha": 0.3,            # HR 时序 EMA 平滑系数（越小越稳，0.3 兼顾稳定与响应）
     "rppg_update_interval_sec": 1.0,  # BVP/HR 重算间隔（秒），减少 ARM 平台 CPU 占用
+    "eval_interval_sec": 0.2,       # 融合/分级/串口统一评估节律（秒，默认 5Hz），稳定 EMA 与串口流量
+    "buffer_gap_reset_sec": 1.0,    # ROI 入缓冲间隔超过此值判定帧序列断裂，清空缓冲防止错误心率
+
+    # ===== 环境红外共模抑制（专利要点一，NIR_CMR 使用） =====
+    "illum_rejection_enabled": True,  # 启用参考区共模抑制，对消对向车灯/路灯干扰
+    "ref_strip_ratio": 0.25,          # 参考区条带宽度占人脸宽度比例
 
     # ===== HRV =====
     "hrv_window_sec": 60,           # HRV计算窗口（秒）
@@ -70,6 +76,12 @@ CONFIG = {
     "w_perclos": 0.30,      # PERCLOS权重
     "w_yawn": 0.35,         # 哈欠权重
     "w_head": 0.15,         # 头姿权重
+
+    # ===== 置信度自适应融合（专利要点二） =====
+    # 依据实时信号质量(SQI)/关键点可用性动态调整各模态权重，抑制瞬时失效模态
+    "adaptive_fusion_enabled": True,
+    "sqi_band_low": 0.7,            # SQI 统计频带下限 Hz
+    "sqi_band_high": 2.5,           # SQI 统计频带上限 Hz
 
     # ===== EMA 时间平滑 =====
     "ema_alpha": 0.3,               # EMA 平滑系数 (0.2~0.4, 越小越平滑)

@@ -6,6 +6,7 @@ import numpy as np
 
 # 导入近红外 rPPG 模块（总是可用）
 from .nir_rppg import extract_nir_bvp, extract_nir_bvp_advanced, extract_nir_bvp_robust
+from .nir_illum import extract_nir_bvp_cmr
 
 # 尝试导入 rPPG-Toolbox（仅RGB模式需要）
 _TOOLBOX_AVAILABLE = False
@@ -23,21 +24,24 @@ except ImportError as e:
     print(f"[提示] RGB模式(CHROM/POS)将不可用，但NIR模式正常工作")
 
 
-def extract_bvp(roi_frames, fs, method="CHROM", is_nir=False):
+def extract_bvp(roi_frames, fs, method="CHROM", is_nir=False, ref_frames=None):
     """从 ROI 帧序列提取 BVP 信号
 
     Args:
         roi_frames: list of (H, W, 3) RGB/NIR 图像
         fs: 采样率 (fps)
-        method: "CHROM" / "POS" / "NIR" / "NIR_ADV" / "NIR_ROBUST"
+        method: "CHROM" / "POS" / "NIR" / "NIR_ADV" / "NIR_ROBUST" / "NIR_CMR"
         is_nir: 是否为近红外模式（自动选择NIR算法）
+        ref_frames: 参考区帧序列（仅 NIR_CMR 环境红外共模抑制使用，可为 None）
 
     Returns:
         bvp: 1D numpy array, 脉搏波信号
     """
     # 近红外模式
     if is_nir or method.startswith("NIR"):
-        if method == "NIR_ROBUST":
+        if method == "NIR_CMR":
+            return extract_nir_bvp_cmr(roi_frames, fs, ref_frames=ref_frames)
+        elif method == "NIR_ROBUST":
             return extract_nir_bvp_robust(roi_frames, fs)
         elif method == "NIR_ADV":
             return extract_nir_bvp_advanced(roi_frames, fs)

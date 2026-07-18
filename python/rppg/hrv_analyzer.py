@@ -103,6 +103,16 @@ class IBIAccumulator:
         """返回最近一次计算的 HRV 特征"""
         return self._cached_hrv
 
+    def reset(self):
+        """清空累积的 IBI 与缓存。
+
+        用于人脸丢失后帧序列断裂的场景：避免把断裂前后的心跳间期混在同一滑窗，
+        造成 HRV 指标失真。
+        """
+        self._ibi_buffer.clear()
+        self._last_update = 0.0
+        self._cached_hrv = _empty_hrv("not_ready")
+
     def _compute_from_buffer(self):
         ibi_values = np.array([v for _, v in self._ibi_buffer])
         if len(ibi_values) < 3:

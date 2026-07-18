@@ -1,0 +1,40 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# ===== STM32 / CMake 编译产物（可由源码重新生成） =====
+stm32/Light/build/
+build/
+Debug/
+Release/
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.map
+*.d
+*.su
+*.lst
+
+# ===== 大文件 / 演示材料（不入代码库，保留在本地即可） =====
+*.mp4
+*.mov
+*.avi
+*.pptx
+*.ppt
+光电纵横队-暗夜守护.pdf
+
+# ===== 编辑器 / 系统 =====
+.DS_Store
+Thumbs.db
+*.log
+
+# 说明：STM32 的 HAL 驱动 (stm32/Light/Drivers/) 与 CubeMX 工程 (.ioc) 有意保留，
+# 以便克隆后可直接编译固件；仅忽略上面的 build/ 编译输出。
