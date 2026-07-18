@@ -1,0 +1,9 @@
+# 让 GitHub Linguist 正确统计语言构成：
+# ST 官方 HAL/CMSIS 驱动是厂商代码，CubeMX/构建产物是自动生成，
+# 均不计入语言占比，以免掩盖本项目实际以 Python 为主的性质。
+stm32/Light/Drivers/**      linguist-vendored
+stm32/**/build/**           linguist-generated
+stm32/Light/cmake/**        linguist-generated
+
+# 保证 Python 被识别为主要语言
+*.py                        linguist-detectable

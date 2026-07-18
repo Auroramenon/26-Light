@@ -36,5 +36,20 @@ Release/
 Thumbs.db
 *.log
 
+# ===== 业务/竞赛/专利材料（保留在本地，不进公开仓库） =====
+business_plan_creative reference1.tex
+business_plan_creative reference2.tex
+old_packages_backup.txt
+充电宝选购推荐.md
+光电赛稿子*.docx
+竞品分析_26Light.md
+暗夜守护_独立电源连接调试手册.md
+香橙派自启动与现场演示方案.md
+香橙派显示屏集成指南.md
+docs/专利交底书_夜间NIR疲劳预警系统.md
+docs/路演PPT大纲.md
+docs/香橙派自启动与现场演示方案.md
+docs/3D建模产品外壳设计.md
+
 # 说明：STM32 的 HAL 驱动 (stm32/Light/Drivers/) 与 CubeMX 工程 (.ioc) 有意保留，
 # 以便克隆后可直接编译固件；仅忽略上面的 build/ 编译输出。
