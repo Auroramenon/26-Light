@@ -27,6 +27,8 @@ def _get_ibi_filter(fs):
 def _extract_ibi(bvp, fs):
     """从 BVP 信号提取 IBI 序列（毫秒）
 
+    同时使用距离、幅度和显著性约束，减少噪声误判峰值。
+
     Returns:
         ibi_ms: ndarray of valid IBI values (ms), may be empty
     """
@@ -37,7 +39,19 @@ def _extract_ibi(bvp, fs):
     bvp_filt = filtfilt(b, a, bvp.astype(np.float64))
 
     min_dist = int(fs * 0.33)
-    peaks, _ = find_peaks(bvp_filt, distance=min_dist)
+    sigma = np.std(bvp_filt)
+
+    # 优先：带高度+显著性约束的检测，减少噪声峰误判
+    peaks, _ = find_peaks(
+        bvp_filt,
+        distance=min_dist,
+        height=np.mean(bvp_filt) + 0.3 * sigma,
+        prominence=0.4 * sigma,
+    )
+
+    # 回退：约束过严时放宽为仅距离约束
+    if len(peaks) < 2:
+        peaks, _ = find_peaks(bvp_filt, distance=min_dist)
 
     if len(peaks) < 2:
         return np.array([])

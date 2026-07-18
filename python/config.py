@@ -33,11 +33,11 @@ CONFIG = {
     "roi_y_end": 0.25,
 
     # ===== rPPG信号 =====
-    "signal_window_sec": 8,         # 滑动窗口长度（秒）8s → FFT 分辨率 ±6 BPM
+    "signal_window_sec": 8,         # 滑动窗口长度（秒）8s @ 零填充FFT → 分辨率 <±1 BPM
     "rppg_method": "NIR_CMR",       # RGB: "CHROM"/"POS"; NIR: "NIR"/"NIR_ADV"/"NIR_ROBUST"/"NIR_CMR"(环境红外共模抑制)
     "bandpass_low": 0.7,            # Hz (42 BPM)
     "bandpass_high": 2.5,           # Hz (150 BPM) 收窄上限减少高频噪声
-    "hr_ema_alpha": 0.3,            # HR 时序 EMA 平滑系数（越小越稳，0.3 兼顾稳定与响应）
+    "hr_ema_alpha": 0.2,            # HR 时序 EMA 平滑系数（0.2更稳，减少FFT量化跳变）
     "rppg_update_interval_sec": 1.0,  # BVP/HR 重算间隔（秒），减少 ARM 平台 CPU 占用
     "eval_interval_sec": 0.2,       # 融合/分级/串口统一评估节律（秒，默认 5Hz），稳定 EMA 与串口流量
     "buffer_gap_reset_sec": 1.0,    # ROI 入缓冲间隔超过此值判定帧序列断裂，清空缓冲防止错误心率
@@ -135,4 +135,13 @@ CONFIG = {
     # ===== GUI =====
     "show_gui": True,
     "show_bvp_plot": True,
+
+    # ===== 小屏幕（ILI9341 SPI, Orange Pi 5 Max / RK3588） =====
+    "oled_enabled": True,            # 启用小屏（需 root 访问 /dev/spidev* 与 /dev/gpiochip*）
+    "oled_gpio_chip": "/dev/gpiochip1",  # GPIO1 bank (fec20000.gpio)
+    "oled_dc_line": 8,               # DC  = Pin22 = GPIO1_B0 = line 8
+    "oled_rst_line": 1,              # RST = Pin13 = GPIO1_A1 = line 1
+    "oled_spi_port": 0,              # /dev/spidev0.0
+    "oled_spi_device": 0,            # CS0 (Pin24)
+    "oled_update_interval": 0.5,     # 刷新间隔（秒）
 }
